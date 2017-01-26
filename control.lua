@@ -1,4 +1,4 @@
--- debug_status = 1
+debug_status = 1
 debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
@@ -76,6 +76,83 @@ local function display_mapmark( note, on_or_off )
 			mapmark.active = false
 			mapmark.backer_name = note.text
 			note.mapmark = mapmark
+		end
+	end
+end
+
+--------------------------------------------------------------------------------------
+-- store the note data into an invis-note
+local function encode_note( note )
+	if note.entity and note.entity.valid then
+		local invis_note = note.invis_note
+
+		-- create the invis-note if one doesn't exit
+		if invis_note == nil then
+			local surf = note.entity.surface
+
+			invis_note = surf.create_entity(
+				{
+					name = "invis-note", 
+				 	position = note.entity.position,
+				 	direction = note.entity.direction,
+				 	force = note.entity.force
+				 })
+
+			note.invis_note = invis_note
+		end
+
+		if invis_note then
+			local color_index = color_to_i[note.color]
+			if color_index == nil or color_index>255 then
+				debug_print("Colors must be hardcoded and be no more than 255 in number")
+				return
+			end
+
+			local metadata = color_index +
+							 autoshow 		* 2 ^ 8 +
+							 mapmark  		* 2 ^ 9 +
+							 locked_force 	* 2 ^ 10 +
+							 locked_admin 	* 2 ^ 11
+
+			-- array of encoded values to store in the invis-note
+			local signal_vals = {metadata}
+			for i = 1, #entity.text do
+				signal_vals[i+1] = -2 ^ 31
+			end
+
+			for i = 1,#entity.text+1 do
+				local signal_i = (i-1)/4
+				local shift = (i-1)%4 * 8
+				local val
+				if i == #entity.text+1 then
+					val = 3 -- string termination
+				else
+					val = string.byte(entity.text,i)
+				end
+				signal_vals[signal_i+1] = signal_vals[signal_i+1] + val * 2 ^ shift
+			end
+
+			if #signal_vals > note.prototype.item_slot_count then
+				debug_print("String length must not exceed 4*(item_slot_count-1)")
+				return
+			end
+
+			local params = {}
+			for i, v in ipairs(signal_vals) do
+				table.insert(params,
+					{
+						signal = 
+						{
+							type = "virtual-signal",
+							name = "signal-0"
+						},
+						count = v,
+						index = i
+					})
+			end
+
+			-- assign encoded values to invis_note
+			invis_note.get_or_create_control_behavior().parameters = {parameters = params}; 
 		end
 	end
 end
@@ -173,6 +250,8 @@ local function add_note( entity )
 	if mapmark_default == true then
 		display_mapmark(note,true)
 	end
+
+	-- encode_note(note)
 	
 	return(note)
 end

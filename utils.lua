@@ -27,6 +27,16 @@ colors = {
 	brown = {r = 0.6, g = 0.4, b = 0.1},
 }
 
+color_to_i = {}
+i_to_color = {}
+for k, v in pairs(colors) do
+	table.insert(i_to_color,v)
+end
+for i, v in ipairs(i_to_color) do
+	color_to_i[v] = i
+end
+
+
 anticolors = {
 	white = colors.black,
 	black = colors.white,
