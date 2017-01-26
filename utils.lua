@@ -27,15 +27,10 @@ colors = {
 	brown = {r = 0.6, g = 0.4, b = 0.1},
 }
 
-color_to_i = {}
-i_to_color = {}
+color_array = {}
 for k, v in pairs(colors) do
-	table.insert(i_to_color,v)
+	table.insert(color_array,v)
 end
-for i, v in ipairs(i_to_color) do
-	color_to_i[v] = i
-end
-
 
 anticolors = {
 	white = colors.black,
@@ -75,6 +70,19 @@ lightcolors = {
 
 local author_name1 = "BinbinHfr"
 local author_name2 = "binbin"
+
+--------------------------------------------------------------------------------------
+function num(var)
+  return var and 1 or 0
+end			
+
+--------------------------------------------------------------------------------------
+function bool(num)
+	if num ~= 0 then
+		return true
+	end
+	return false 
+end
 
 --------------------------------------------------------------------------------------
 function read_version(v)

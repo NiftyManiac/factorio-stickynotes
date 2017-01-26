@@ -102,37 +102,52 @@ local function encode_note( note )
 		end
 
 		if invis_note then
-			local color_index = color_to_i[note.color]
+			local color = note.color
+			local color_index
+			for i, v in ipairs(color_array) do
+				if color.r == v.r and color.g == v.g and color.b == v.b then
+					color_index = i
+					break
+				end
+			end
 			if color_index == nil or color_index>255 then
 				debug_print("Colors must be hardcoded and be no more than 255 in number")
 				return
 			end
 
+			debug_print("Color: "..note.color.r..note.color.g..note.color.b)
+			debug_print("Color index: "..color_index)
+
 			local metadata = color_index +
-							 autoshow 		* 2 ^ 8 +
-							 mapmark  		* 2 ^ 9 +
-							 locked_force 	* 2 ^ 10 +
-							 locked_admin 	* 2 ^ 11
+							 num(note.autoshow) 	* 2 ^ 8 +
+							 num(note.mapmark)  	* 2 ^ 9 +
+							 num(note.locked_force)	* 2 ^ 10 +
+							 num(note.locked_admin)	* 2 ^ 11
+			debug_print("Encoded metadata: "..metadata)
 
 			-- array of encoded values to store in the invis-note
-			local signal_vals = {metadata}
-			for i = 1, #entity.text do
-				signal_vals[i+1] = -2 ^ 31
+			local signal_vals = {}
+			for i = 1, 51 do
+				signal_vals[i] = -2 ^ 31
 			end
 
-			for i = 1,#entity.text+1 do
-				local signal_i = (i-1)/4
+			signal_vals[1] = signal_vals[1] + metadata
+			debug_print("Encoded metadata2: "..signal_vals[1])
+
+			for i = 1,#note.text+1 do
+				local signal_i = math.floor((i-1)/4)
 				local shift = (i-1)%4 * 8
 				local val
-				if i == #entity.text+1 then
+				if i == #note.text+1 then
 					val = 3 -- string termination
 				else
-					val = string.byte(entity.text,i)
+					val = string.byte(note.text,i)
 				end
-				signal_vals[signal_i+1] = signal_vals[signal_i+1] + val * 2 ^ shift
+				signal_vals[signal_i+2] = signal_vals[signal_i+2] + val * 2 ^ shift
 			end
-
-			if #signal_vals > note.prototype.item_slot_count then
+			debug_print("Text1: ",signal_vals[2])
+			debug_print("Text2: ",signal_vals[3])
+			if #signal_vals > 51 then
 				debug_print("String length must not exceed 4*(item_slot_count-1)")
 				return
 			end
@@ -143,7 +158,7 @@ local function encode_note( note )
 					{
 						signal = 
 						{
-							type = "virtual-signal",
+							type = "virtual",
 							name = "signal-0"
 						},
 						count = v,
@@ -155,6 +170,43 @@ local function encode_note( note )
 			invis_note.get_or_create_control_behavior().parameters = {parameters = params}; 
 		end
 	end
+end
+
+--------------------------------------------------------------------------------------
+-- decode an invis_note and return a note object
+local function decode_note( invis_note )
+	local note = {}
+
+	local params = invis_note.get_or_create_control_behavior().parameters.parameters
+	local metadata = params[1].count + 2^31
+	debug_print("Metadata: "..metadata)
+
+	note.autoshow = bool(bit32.band(metadata, 2^8))
+	note.mapmark = bool(bit32.band(metadata, 2^9))
+	note.locked_force = bool(bit32.band(metadata, 2^10))
+	note.locked_admin = bool(bit32.band(metadata, 2^11))
+	debug_print(bit32.band(metadata, 2^9))
+
+	local color_i = bit32.band(metadata, 255)
+	note.color = color_array[color_i]
+	if note.color == nil then
+		debug_print("Failed to decode color")
+	end
+
+	note.text = ""
+	for i = 1, (51-1)*4 do
+		local signal_i = math.floor((i-1)/4)
+		local shift = (i-1)%4 * 8
+		local mask = bit32.lshift(255, shift)
+
+		local byte = bit32.rshift(bit32.band(params[signal_i+2].count+2^31, mask), shift)
+		if byte == 3 then
+			break
+		end
+		note.text = note.text .. string.char(byte)
+	end
+
+	return note
 end
 
 --------------------------------------------------------------------------------------
@@ -251,7 +303,7 @@ local function add_note( entity )
 		display_mapmark(note,true)
 	end
 
-	-- encode_note(note)
+	encode_note(note)
 	
 	return(note)
 end
@@ -473,6 +525,17 @@ local function on_gui_text_changed(event)
 		
 		if note then
 			note.text = event.element.text
+			encode_note(note)
+
+			debug_print("Text: "..note.text)
+			local decoded = decode_note(note.invis_note)
+			debug_print("Encoded/decoded text: "..decoded.text)
+			debug_print("Autoshow: "..num(decoded.autoshow))
+			debug_print("mapmark: "..num(decoded.mapmark))
+			debug_print("locked force: "..num(decoded.locked_force))
+			debug_print("locked admin: "..num(decoded.locked_admin))
+			debug_print("color: "..decoded.color.r.." "..decoded.color.g.." "..decoded.color.b)
+
 			hide_note(note)
 			show_note(note)
 			if note.mapmark then

@@ -35,6 +35,8 @@ sign.inventory_size = 1
 
 local invis_note = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
 invis_note.name = "invis-note"
+invis_note.icon = "__StickyNotes__/graphics/sticky-note.png"
+sprites = {}
 invis_note.picture =
 	{
 		filename = "__StickyNotes__/graphics/sticky-note.png",
