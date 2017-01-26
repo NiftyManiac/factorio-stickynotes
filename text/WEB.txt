@@ -1,0 +1,40 @@
+[b][size=150]Infos[/size][/b]
+[list]
+[*]Type: Mod
+[*]Name: Sticky Notes 
+[*]Description: Stick notes (or signs) on the map, as a reminder for yourself, or a message for other players.
+[*]Tested-With-Factorio-Version: 0.13.14
+[*]Locale: english
+[*]Multiplayer compatible: tested on a headless server.
+[*]Tags: Note, message.
+[*]License: You are free to use and distribute this mod and also to modify it for personal use, but not to release a modified version without permission (unless visibly not maintained anymore).
+[*]Portal download : https://mods.factorio.com/mods/binbinhfr/StickyNotes[/list]
+[attachment=1]logo.jpg[/attachment]
+[spoiler=DESCRIPTION][b][size=150]DESCRIPTION[/size][/b]
+Do you want to stick notes on the map, as a reminder for yourself, or as a message for other players when they are visiting your area or when they will connect later?
+
+You can use these sticky notes technology : put a note or a sign down on the map, select it (hover on it with the mouse) and type ALT-W to open its GUI : you can type a text, and choose some options :
+- color : color of the text.
+- autoshow : the text will only be displayed when any user hover on the note. Otherwise, the text is permanently displayed.
+- mapmark : the text will also be seen on the map (key "M")
+- locked by force : if checked, the text can only be edited by players of the same force, otherwise anybody can edit the text.
+- locked by admin : if checked, the text can only be edited by admins and signs can only be deleted by admins.
+
+More than that, you can now add a text on any entity on the map. Just select the entity and type ALT-W :
+a text will be added, with same options as above. If you want to suppress this text, use the "delete" button.
+Warning: if the object is destroyed, the text is also destroyed and lost, even if a robot reconstructs another entity at the same place.
+
+To quickly close the notes menu, you can use ALT-W without selecting any object on the map.
+
+You can redefine the ALT-W key in menu/options/controls/mod
+
+Now the mod integrates optional colorpicker by Mooncat for fine color tuning !
+Give it a try and download it here : https://mods.factorio.com/mods/Mooncat/color-picker
+
+That's all folks !
+
+Have fun with Factorio ![/spoiler]
+[attachment=0]screen2b.jpg[/attachment]
+[b][size=150]Download[/size][/b]
+For Factorio 0.13.X :
+[color=#00BF80]Please use the portal for downloads (see link above or use ingame mod install/update).[/color]

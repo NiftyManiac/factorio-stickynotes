@@ -1,0 +1,20 @@
+##VERSIONS:
+1.0.13	- add mapmark_default and text_default in config.lua
+1.0.12	- new "locked by admin" option, to avoid edition and deletion by non-admins.
+1.0.11	- integrate colorpicker support by Mooncat for fine color tuning !
+		  download it here : https://mods.factorio.com/mods/Mooncat/color-picker
+		- correct a bug when reopening a window with ALT-W that was closed with "close" button.
+1.0.10	- prevents using ALT-W if technology "sticky-notes" is not researched !
+1.0.9	- russian locale by KroshkaYenot
+		- french locale by Binbinhfr
+1.0.8	- now player can add a text on any entity on the map (of his own force), using the ALT-W key 
+		- ENTER key is suppressed because already used for entering vehicles/trains.
+		- by default, autoshow is now off (to avoid putting texts everywhere by mistake and
+		  losing their position)
+		- you can clean all notes texts on the map using /c remote.call( "notes", "clean" )
+1.0.7	- now constructible by robots and blueprints.
+1.0.4	- locale for hotkey
+1.0.3	- factorio 0.14 compatible
+1.0.2	- better init forces when installing on existing game.
+1.0.1	- introduce an alternative design in form of a sign to highlights special places in your factory.
+1.0.0	- initial release
