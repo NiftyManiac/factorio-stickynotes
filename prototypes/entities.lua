@@ -30,6 +30,23 @@ sign.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 -- sign.collision_mask = "floor-layer"
 sign.inventory_size = 1
 
+
+-- local invis_note = dupli_proto("constant-combinator", "constant-combinator", "invis-note")
+
+local invis_note = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
+invis_note.name = "invis-note"
+invis_note.picture =
+	{
+		filename = "__StickyNotes__/graphics/sticky-note.png",
+		priority = "extra-high",
+		width = 32,
+		height = 32,
+		shift = {0,0},
+	}
+invis_note.flags = {"placeable-off-grid"}
+invis_note.item_slot_count = 51 -- first slot stores metadata, the rest store text at 4 chars per slot
+circuit_wire_connection_points = {}
+
 data:extend(
 	{
 		{
@@ -109,6 +126,9 @@ data:extend(
 			result = "sticky-sign",
 			result_count = 1,
 		},
+
+		-- invis_note,
+		invis_note,
 	}
 	)		
 
