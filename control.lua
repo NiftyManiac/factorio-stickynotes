@@ -69,8 +69,8 @@ local function display_mapmark( note, on_or_off )
 
 	note.mapmark = nil
 
-	if on_or_off and note.entity and note.entity.valid then
-		local mapmark = note.entity.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.entity.position})
+	if on_or_off and note.invis_note and note.invis_note.valid then
+		local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
 		if mapmark then
 			mapmark.operable = false
 			mapmark.active = false
@@ -80,112 +80,110 @@ local function display_mapmark( note, on_or_off )
 	end
 end
 
+--!!
+local function create_invis_note( entity )
+	local surf = entity.surface
+
+	invis_note = surf.create_entity(
+		{
+			name = "invis-note", 
+		 	position = entity.position,
+		 	direction = entity.direction,
+		 	force = entity.force
+		 })
+
+	return invis_note
+end
+
 --------------------------------------------------------------------------------------
--- store the note data into an invis-note
+-- store the note data into an existing invis-note
 local function encode_note( note )
-	if note.entity and note.entity.valid then
-		local invis_note = note.invis_note
+	local invis_note = note.invis_note
 
-		-- create the invis-note if one doesn't exit
-		if invis_note == nil then
-			local surf = note.entity.surface
+	if invis_note then
+		local color = note.color
+		local color_index
+		for i, v in ipairs(color_array) do
+			if color.r == v.r and color.g == v.g and color.b == v.b then
+				color_index = i
+				break
+			end
+		end
+		if color_index == nil or color_index>255 then
+			debug_print("Colors must be hardcoded and be no more than 255 in number")
+			return
+		end
 
-			invis_note = surf.create_entity(
+		debug_print("Color: "..note.color.r..note.color.g..note.color.b)
+		debug_print("Color index: "..color_index)
+
+		local metadata = color_index +
+						 num(note.autoshow) 		* 2 ^ 8 +
+						 num(note.mapmark ~= nil)	* 2 ^ 9 +
+						 num(note.locked_force)		* 2 ^ 10 +
+						 num(note.locked_admin)		* 2 ^ 11
+		debug_print("Encoded metadata: "..metadata)
+
+		-- array of encoded values to store in the invis-note
+		local signal_vals = {}
+		for i = 1, 51 do
+			signal_vals[i] = -2 ^ 31
+		end
+
+		signal_vals[1] = signal_vals[1] + metadata
+		debug_print("Encoded metadata2: "..signal_vals[1])
+
+		for i = 1,#note.text+1 do
+			local signal_i = math.floor((i-1)/4)
+			local shift = (i-1)%4 * 8
+			local val
+			if i == #note.text+1 then
+				val = 3 -- string termination
+			else
+				val = string.byte(note.text,i)
+			end
+			signal_vals[signal_i+2] = signal_vals[signal_i+2] + val * 2 ^ shift
+		end
+		debug_print("Text1: ",signal_vals[2])
+		debug_print("Text2: ",signal_vals[3])
+		if #signal_vals > 51 then
+			debug_print("String length must not exceed 4*(item_slot_count-1)")
+			return
+		end
+
+		local params = {}
+		for i, v in ipairs(signal_vals) do
+			table.insert(params,
 				{
-					name = "invis-note", 
-				 	position = note.entity.position,
-				 	direction = note.entity.direction,
-				 	force = note.entity.force
-				 })
-
-			note.invis_note = invis_note
-		end
-
-		if invis_note then
-			local color = note.color
-			local color_index
-			for i, v in ipairs(color_array) do
-				if color.r == v.r and color.g == v.g and color.b == v.b then
-					color_index = i
-					break
-				end
-			end
-			if color_index == nil or color_index>255 then
-				debug_print("Colors must be hardcoded and be no more than 255 in number")
-				return
-			end
-
-			debug_print("Color: "..note.color.r..note.color.g..note.color.b)
-			debug_print("Color index: "..color_index)
-
-			local metadata = color_index +
-							 num(note.autoshow) 	* 2 ^ 8 +
-							 num(note.mapmark)  	* 2 ^ 9 +
-							 num(note.locked_force)	* 2 ^ 10 +
-							 num(note.locked_admin)	* 2 ^ 11
-			debug_print("Encoded metadata: "..metadata)
-
-			-- array of encoded values to store in the invis-note
-			local signal_vals = {}
-			for i = 1, 51 do
-				signal_vals[i] = -2 ^ 31
-			end
-
-			signal_vals[1] = signal_vals[1] + metadata
-			debug_print("Encoded metadata2: "..signal_vals[1])
-
-			for i = 1,#note.text+1 do
-				local signal_i = math.floor((i-1)/4)
-				local shift = (i-1)%4 * 8
-				local val
-				if i == #note.text+1 then
-					val = 3 -- string termination
-				else
-					val = string.byte(note.text,i)
-				end
-				signal_vals[signal_i+2] = signal_vals[signal_i+2] + val * 2 ^ shift
-			end
-			debug_print("Text1: ",signal_vals[2])
-			debug_print("Text2: ",signal_vals[3])
-			if #signal_vals > 51 then
-				debug_print("String length must not exceed 4*(item_slot_count-1)")
-				return
-			end
-
-			local params = {}
-			for i, v in ipairs(signal_vals) do
-				table.insert(params,
+					signal = 
 					{
-						signal = 
-						{
-							type = "virtual",
-							name = "signal-0"
-						},
-						count = v,
-						index = i
-					})
-			end
-
-			-- assign encoded values to invis_note
-			invis_note.get_or_create_control_behavior().parameters = {parameters = params}; 
+						type = "virtual",
+						name = "signal-0"
+					},
+					count = v,
+					index = i
+				})
 		end
+
+		-- assign encoded values to invis_note
+		invis_note.get_or_create_control_behavior().parameters = {parameters = params}; 
 	end
 end
 
 --------------------------------------------------------------------------------------
--- decode an invis_note and return a note object
+-- decode an invis_note and return a note object. Also, create a mapmark if needed
 local function decode_note( invis_note )
 	local note = {}
+	note.invis_note = invis_note
 
 	local params = invis_note.get_or_create_control_behavior().parameters.parameters
 	local metadata = params[1].count + 2^31
 	debug_print("Metadata: "..metadata)
 
 	note.autoshow = bool(bit32.band(metadata, 2^8))
-	note.mapmark = bool(bit32.band(metadata, 2^9))
+	local show_mapmark = bool(bit32.band(metadata, 2^9))
 	note.locked_force = bool(bit32.band(metadata, 2^10))
 	note.locked_admin = bool(bit32.band(metadata, 2^11))
-	debug_print(bit32.band(metadata, 2^9))
 
 	local color_i = bit32.band(metadata, 255)
 	note.color = color_array[color_i]
@@ -206,6 +204,8 @@ local function decode_note( invis_note )
 		note.text = note.text .. string.char(byte)
 	end
 
+	display_mapmark(note, show_mapmark)
+
 	return note
 end
 
@@ -213,10 +213,10 @@ end
 local function show_note( note )
 	if note.fly then return end
 	
-	if note.entity and note.entity.valid then
-		local pos = note.entity.position
-		local surf = note.entity.surface
-		local force = note.entity.force
+	if note.invis_note and note.invis_note.valid then
+		local pos = note.invis_note.position
+		local surf = note.invis_note.surface
+		local force = note.invis_note.force
 		local x = pos.x-1
 		local y = pos.y
 		
@@ -237,6 +237,7 @@ local function hide_note( note )
 	note.fly = nil
 end
 
+--!! should invis_note be destroyed here?
 --------------------------------------------------------------------------------------
 local function destroy_note( note )
 	for i, player in pairs(game.players) do
@@ -260,15 +261,15 @@ end
 
 --------------------------------------------------------------------------------------
 local function find_note( ent )
+	local invis_note = ent.surface.find_entity('invis-note',ent.position)
+
 	for i=1,#global.notes do
 		local note = global.notes[i]
 		
-		if note.entity == ent then
+		if note.invis_note == invis_note then
 			return(note)
 		end
 	end
-	
-	return(nil)
 end
 
 --------------------------------------------------------------------------------------
@@ -277,7 +278,6 @@ local function add_note( entity )
 	
 	local note =
 	{
-		entity = entity, -- inactive/unoperable chest entity
 		text = "text " .. global.n_note, -- text
 		color = text_color_default, -- color
 		n = global.n_note, -- number of the note
@@ -289,12 +289,12 @@ local function add_note( entity )
 		locked_admin = false, -- only modifiable by admins
 		editer = nil, -- player currently editing
 		is_sign = (entity.name == "sticky-note" or entity.name == "sticky-sign"), -- is connected to a real note/sign object
+		invis_note = create_invis_note(entity),
 	}
 	
 	if text_default ~= nil then
 		note.text = text_default
 	end
-	
 	show_note(note)
 	
 	table.insert(global.notes, note)
@@ -359,6 +359,7 @@ end
 script.on_init(on_init)
 
 --------------------------------------------------------------------------------------
+-- !! todo migration
 local function on_configuration_changed(data)
 	-- detect any mod or game version change
 	if data.mod_changes ~= nil then
@@ -434,6 +435,7 @@ end
 script.on_event(defines.events.on_player_joined_game, on_player_joined_game )
 
 --------------------------------------------------------------------------------------
+-- !!fix sign behaviors
 local function on_creation( event )
 	local ent = event.created_entity
 	local force = ent.force
@@ -458,14 +460,18 @@ script.on_event(defines.events.on_robot_built_entity, on_creation )
 local function on_destruction( event )
 	local ent = event.entity
 	local ent_name = ent.name
-	
-	for i,note in pairs(global.notes) do
-		if note.entity == ent then
-			debug_print( "on_destruction ", ent_name )
-			destroy_note(note)
-			table.remove(global.notes,i)
-			break
-		end
+
+	local this_note = find_note(ent)
+
+	if this_note.invis_note and this_note.invis_note.valid then
+		for i,note in pairs(global.notes) do
+			if note.invis_note == this_note.invis_note then
+				debug_print( "on_destruction ", ent_name )
+				destroy_note(note)
+				table.remove(global.notes,i)
+				break
+			end
+		end	
 	end
 end
 
@@ -496,7 +502,7 @@ local function on_tick(event)
 		for i=#global.notes,1,-1 do
 			local note = global.notes[i]
 			
-			if note.entity and note.entity.valid then
+			if note.invis_note and note.invis_note.valid then
 				if note.autoshow and note.fly and note.editer == nil and game.tick > note.autohide_tick then
 					hide_note(note)
 				end
@@ -527,6 +533,7 @@ local function on_gui_text_changed(event)
 			note.text = event.element.text
 			encode_note(note)
 
+			--!! remove garbage
 			debug_print("Text: "..note.text)
 			local decoded = decode_note(note.invis_note)
 			debug_print("Encoded/decoded text: "..decoded.text)
@@ -581,10 +588,6 @@ local function on_gui_click(event)
 				end
 			end
 			menu_note(player,player_mem,false)
-			if note.is_sign then
-				note.entity.minable = true
-				note.entity.destroy()
-			end
 			player_mem.note_sel = nil
 		end
 		
@@ -595,6 +598,7 @@ local function on_gui_click(event)
 		
 		if color and note then
 			note.color = color
+			encode_note(note)
 			hide_note(note)
 			show_note(note)
 		end
@@ -605,6 +609,7 @@ local function on_gui_click(event)
 		
 		if note then
 			note.autoshow = event.element.state
+			encode_note(note)
 			if note.autoshow then
 				hide_note(note)
 			else
@@ -623,12 +628,14 @@ local function on_gui_click(event)
 				display_mapmark(note,false)
 			end
 		end
+		encode_note(note)
 	
 	elseif event_name == "chk_stknt_locked_force" then
 		local player_mem = global.player_mem[player.index]
 		local note = player_mem.note_sel
 		
 		note.locked_force = event.element.state
+		encode_note(note)
 		
 	elseif event_name == "chk_stknt_locked_admin" then
 		if player.admin then
@@ -636,6 +643,7 @@ local function on_gui_click(event)
 			local note = player_mem.note_sel
 		
 			note.locked_admin = event.element.state
+			encode_note(note)
 			
 			if note.is_sign then
 				if note.locked_admin then
@@ -714,7 +722,7 @@ function on_hotkey_write(event)
 		end
 		
 		-- show the new menu
-		if note and (note.editer == nil or not note.editer.connected) and (note.entity.force == player.force or not note.locked_force) and (player.admin or not note.locked_admin) then
+		if note and (note.editer == nil or not note.editer.connected) and (note.invis_note.force == player.force or not note.locked_force) and (player.admin or not note.locked_admin) then
 			player_mem.note_sel = note
 			note.editer = player
 			menu_note(player,player_mem,true)

@@ -37,14 +37,18 @@ local invis_note = table.deepcopy(data.raw["constant-combinator"]["constant-comb
 invis_note.name = "invis-note"
 invis_note.icon = "__StickyNotes__/graphics/sticky-note.png"
 sprites = {}
+activity_led_sprites = {}
 invis_note.picture =
 	{
 		filename = "__StickyNotes__/graphics/sticky-note.png",
-		priority = "extra-high",
+		priority = "very-low",
 		width = 32,
 		height = 32,
 		shift = {0,0},
 	}
+
+invis_note.collisionBox = {{-0, -0}, {0, 0}}
+invis_note.collisionMask = {"ghost-layer"}
 invis_note.flags = {"placeable-off-grid"}
 invis_note.item_slot_count = 51 -- first slot stores metadata, the rest store text at 4 chars per slot
 circuit_wire_connection_points = {}
