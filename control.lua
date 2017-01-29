@@ -560,16 +560,6 @@ local function on_gui_text_changed(event)
 			note.text = event.element.text
 			encode_note(note)
 
-			--!! remove garbage
-			debug_print("Text: "..note.text)
-			local decoded = decode_note(note.invis_note)
-			debug_print("Encoded/decoded text: "..decoded.text)
-			debug_print("Autoshow: "..num(decoded.autoshow))
-			debug_print("mapmark: "..num(decoded.mapmark))
-			debug_print("locked force: "..num(decoded.locked_force))
-			debug_print("locked admin: "..num(decoded.locked_admin))
-			debug_print("color: "..decoded.color.r.." "..decoded.color.g.." "..decoded.color.b)
-
 			hide_note(note)
 			show_note(note)
 			if note.mapmark then
