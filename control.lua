@@ -285,8 +285,9 @@ end
 
 --------------------------------------------------------------------------------------
 local function register_note( note )
+	debug_print("Registering note")
 	global.n_note = global.n_note + 1
-	note.n = n_note;
+	note.n = global.n_note;
 	table.insert(global.notes, note)
 end
 
