@@ -485,11 +485,16 @@ local function on_creation( event )
 	end
 	
 	if ent.name == "invis-note" then
-		debug_print("decoding invis-note")
-		note = decode_note(ent)
-		register_note(note)
-		show_note(note)
-		display_mapmark(note, note.mapmark)
+		local note_target = ent.surface.find_entities_filtered{position=ent.position}[1]
+		if note_target and note_target.name ~= "invis-note" then
+			debug_print("Decoding invis-note")
+			note = decode_note(ent)
+			register_note(note)
+			show_note(note)
+			display_mapmark(note, note.mapmark)
+		else
+			debug_print("No note target found")
+		end
 
 	elseif ent.name == "sticky-note" or ent.name == "sticky-sign" then
 		

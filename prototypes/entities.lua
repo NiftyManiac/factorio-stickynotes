@@ -128,7 +128,7 @@ data:extend(
 		    -- minable = {hardness = 0.2, mining_time = 0.5, result = "constant-combinator"},
 		    max_health = 50,
 		    corpse = "small-remnants",
-		    collision_mask = {},
+		    collision_mask = {"not-colliding-with-itself"},
 
 		    collision_box = {{0, 0}, {0, 0}},
 		    selection_box = {{0, 0}, {0, 0}},
