@@ -1,37 +1,38 @@
 [b][size=150]Infos[/size][/b]
 [list]
 [*]Type: Mod
-[*]Name: Sticky Notes 
-[*]Description: Stick notes (or signs) on the map, as a reminder for yourself, or a message for other players.
-[*]Tested-With-Factorio-Version: 0.13.14
-[*]Locale: english
+[*]Name: Sticky Notes Improved
+[*]Description: Build notes and add annotations to objects
+[*]Tested with Factorio-version: 0.14.21
+[*]Locale: English, French, Russian
 [*]Multiplayer compatible: tested on a headless server.
 [*]Tags: Note, message.
-[*]License: You are free to use and distribute this mod and also to modify it for personal use, but not to release a modified version without permission (unless visibly not maintained anymore).
+[*]License: You are free to use and distribute this mod and also to modify it for personal use, but not to release a modified version without permission (unless visibly not maintained anymore). Please contribute via github.
+[*]Source: https://github.com/NiftyManiac/factorio-stickynotes
 [*]Portal download : https://mods.factorio.com/mods/binbinhfr/StickyNotes[/list]
 [attachment=1]logo.jpg[/attachment]
 [spoiler=DESCRIPTION][b][size=150]DESCRIPTION[/size][/b]
-Do you want to stick notes on the map, as a reminder for yourself, or as a message for other players when they are visiting your area or when they will connect later?
+Do you want to stick notes on the map, as a reminder for yourself, or as a message for other players when they are visiting your area or when they will connect later? Do you want to annotate your designs when sharing blueprints with others?
 
-You can use these sticky notes technology : put a note or a sign down on the map, select it (hover on it with the mouse) and type ALT-W to open its GUI : you can type a text, and choose some options :
-- color : color of the text.
-- autoshow : the text will only be displayed when any user hover on the note. Otherwise, the text is permanently displayed.
-- mapmark : the text will also be seen on the map (key "M")
-- locked by force : if checked, the text can only be edited by players of the same force, otherwise anybody can edit the text.
-- locked by admin : if checked, the text can only be edited by admins and signs can only be deleted by admins.
+You can use these sticky notes technology: put a note or a sign down on the map, select it (hover on it with the mouse) and type ALT-W to open its GUI. You can also do this with any fixed entity on the map. You can then type text, and choose some options:
+- color: the color of the text.
+- Auto-show: the text will only be displayed when a user hovers over the note. Otherwise, the text is permanently displayed.
+- Map-mark: the text will also be seen on the map (key "M")
+- Locked by force : if checked, the text can only be edited by players of the same force, otherwise anybody can edit the text.
+- Locked by admin : if checked, the text can only be edited by admins and signs can only be deleted by admins.
 
-More than that, you can now add a text on any entity on the map. Just select the entity and type ALT-W :
-a text will be added, with same options as above. If you want to suppress this text, use the "delete" button.
+To delete a note, simply open the menu again with ALT-W and hit "Delete". For signs and sticky notes, this will destroy the object as well.
 Warning: if the object is destroyed, the text is also destroyed and lost, even if a robot reconstructs another entity at the same place.
 
 To quickly close the notes menu, you can use ALT-W without selecting any object on the map.
 
-You can redefine the ALT-W key in menu/options/controls/mod
+You can redefine the ALT-W key in menu/options/controls/mod.
 
-Now the mod integrates optional colorpicker by Mooncat for fine color tuning !
-Give it a try and download it here : https://mods.factorio.com/mods/Mooncat/color-picker
+Now the mod integrates the optional colorpicker by Mooncat for fine color tuning!
+Give it a try and download it here: https://mods.factorio.com/mods/Mooncat/color-picker
+Warning: custom colors will not work with blueprinting functionality.
 
-That's all folks !
+That's all folks!
 
 Have fun with Factorio ![/spoiler]
 [attachment=0]screen2b.jpg[/attachment]
