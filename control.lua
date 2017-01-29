@@ -1,5 +1,5 @@
 debug_status = 1
-debug_mod_name = "StickyNotes"
+debug_mod_name = "StickyNotesImproved"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
 require("config")
@@ -126,7 +126,7 @@ local function encode_note( note )
 
 		-- array of encoded values to store in the invis-note
 		local signal_vals = {}
-		for i = 1, 51 do
+		for i = 1, note_slot_count do
 			signal_vals[i] = -2 ^ 31
 		end
 
@@ -146,8 +146,8 @@ local function encode_note( note )
 		end
 		debug_print("Text1: ",signal_vals[2])
 		debug_print("Text2: ",signal_vals[3])
-		if #signal_vals > 51 then
-			debug_print("String length must not exceed 4*(item_slot_count-1)")
+		if #signal_vals > note_slot_count then
+			debug_print("String length must not exceed "..(4*(note_slot_count-1))..". Increase note_slot_count in config.lua if needed.")
 			return
 		end
 
@@ -192,7 +192,7 @@ local function decode_note( invis_note )
 	end
 
 	note.text = ""
-	for i = 1, (51-1)*4 do
+	for i = 1, (note_slot_count-1)*4 do
 		local signal_i = math.floor((i-1)/4)
 		local shift = (i-1)%4 * 8
 		local mask = bit32.lshift(255, shift)

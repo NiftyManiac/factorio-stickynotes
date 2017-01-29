@@ -30,41 +30,6 @@ sign.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 -- sign.collision_mask = "floor-layer"
 sign.inventory_size = 1
 
-
--- local invis_note = dupli_proto("container", "wooden-chest", "invis-note")
-
--- local invis_note = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
--- invis_note.name = "invis-note"
--- invis_note.icon = "__StickyNotes__/graphics/sticky-note.png"
--- sprites = {}
--- activity_led_sprites = {}
--- invis_note.picture =
--- 	{
--- 		filename = "__StickyNotes__/graphics/sticky-note.png",
--- 		priority = "very-low",
--- 		width = 32,
--- 		height = 32,
--- 		shift = {0,0},
--- 	}
-
--- invis_note.collisionBox = {{-0, -0}, {0, 0}}
--- invis_note.collisionMask = {"ghost-layer"}
--- invis_note.flags = {"placeable-off-grid"}
--- invis_note.item_slot_count = 51 -- first slot stores metadata, the rest store text at 4 chars per slot
--- invis_note.icon = "__base__/graphics/icons/constant-combinator.png",
--- invis_note.flags = {"placeable-off-grid"}
--- invis_note.flags = {"placeable-neutral", "player-creation"}
--- invis_note.flags = {"placeable-player"}
--- invis_note.minable = {hardness = 0.2, mining_time = 0.5, result = "constant-combinator"},
--- invis_note.max_health = 50,
--- invis_note.corpse = "small-remnants",
-
--- invis_note.collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
--- invis_note.selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
--- circuit_wire_connection_points = {}
-
-
-
 data:extend(
 	{
 		{
@@ -168,7 +133,7 @@ data:extend(
 		    collision_box = {{0, 0}, {0, 0}},
 		    selection_box = {{0, 0}, {0, 0}},
 
-		    item_slot_count = 51,
+		    item_slot_count = note_slot_count,
 
 		    sprites =
 		    {
