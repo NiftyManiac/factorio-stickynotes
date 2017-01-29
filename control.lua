@@ -237,7 +237,6 @@ local function hide_note( note )
 	note.fly = nil
 end
 
---!! should invis_note be destroyed here?
 --------------------------------------------------------------------------------------
 local function destroy_note( note )
 	for i, player in pairs(game.players) do
@@ -257,6 +256,10 @@ local function destroy_note( note )
 		note.mapmark.destroy()
 	end
 	note.mapmark = nil
+
+	if note.invis_note and note.invis_note.valid then
+		note.invis_note.destroy()
+	end
 end
 
 --------------------------------------------------------------------------------------
