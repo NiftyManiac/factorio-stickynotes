@@ -148,7 +148,7 @@ data:extend(
 		{
 		    type = "item",
 		    name = "invis-note",
-		    icon = "__base__/graphics/icons/constant-combinator.png",
+		    icon = "__StickyNotes__/graphics/sticky-note.png",
 		    flags = { "goes-to-quickbar" },
 		    subgroup = "circuit-network",
 		    place_result="invis-note",
@@ -158,14 +158,15 @@ data:extend(
 		{
 		    type = "constant-combinator",
 			name = "invis-note",
-		    icon = "__base__/graphics/icons/constant-combinator.png",
-		    flags = {"placeable-neutral", "player-creation"},
-		    minable = {hardness = 0.2, mining_time = 0.5, result = "constant-combinator"},
+		    icon = "__StickyNotes__/graphics/sticky-note.png",
+		    flags = {"player-creation", "placeable-off-grid"},
+		    -- minable = {hardness = 0.2, mining_time = 0.5, result = "constant-combinator"},
 		    max_health = 50,
 		    corpse = "small-remnants",
+		    collision_mask = {},
 
-		    collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
-		    selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+		    collision_box = {{0, 0}, {0, 0}},
+		    selection_box = {{0, 0}, {0, 0}},
 
 		    item_slot_count = 51,
 
@@ -173,42 +174,43 @@ data:extend(
 		    {
 		      north =
 		      {
-		        filename = "__base__/graphics/entity/combinator/combinator-entities.png",
-		        x = 158,
-		        y = 126,
-		        width = 79,
-		        height = 63,
+		        filename = "__StickyNotes__/graphics/empty.png",
+		        x = 0,
+		        y = 0,
+		        width = 1,
+		        height = 1,
 		        frame_count = 1,
-		        shift = {0.140625, 0.140625},
+		        shift = {0, 0},
 		      },
 		      east =
 		      {
-		        filename = "__base__/graphics/entity/combinator/combinator-entities.png",
-		        y = 126,
-		        width = 79,
-		        height = 63,
+		        filename = "__StickyNotes__/graphics/empty.png",
+		        x = 0,
+		        y = 0,
+		        width = 1,
+		        height = 1,
 		        frame_count = 1,
-		        shift = {0.140625, 0.140625},
+		        shift = {0, 0},
 		      },
 		      south =
 		      {
-		        filename = "__base__/graphics/entity/combinator/combinator-entities.png",
-		        x = 237,
-		        y = 126,
-		        width = 79,
-		        height = 63,
+		        filename = "__StickyNotes__/graphics/empty.png",
+		        x = 0,
+		        y = 0,
+		        width = 1,
+		        height = 1,
 		        frame_count = 1,
-		        shift = {0.140625, 0.140625},
+		        shift = {0, 0},
 		      },
 		      west =
 		      {
-		        filename = "__base__/graphics/entity/combinator/combinator-entities.png",
-		        x = 79,
-		        y = 126,
-		        width = 79,
-		        height = 63,
+		        filename = "__StickyNotes__/graphics/empty.png",
+		        x = 0,
+		        y = 0,
+		        width = 1,
+		        height = 1,
 		        frame_count = 1,
-		        shift = {0.140625, 0.140625},
+		        shift = {0, 0},
 		      }
 		    },
 

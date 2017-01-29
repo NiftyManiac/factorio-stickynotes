@@ -261,13 +261,24 @@ end
 
 --------------------------------------------------------------------------------------
 local function find_note( ent )
-	local invis_note = ent.surface.find_entity('invis-note',ent.position)
+	-- note: find_entity doesn't seem to work when the collision box is 0
+	local x = ent.position.x
+	local y = ent.position.y
+	local entities = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}
+	for _, entity in ipairs(entities) do
+		if entity.position.x==x and entity.position.y==y then
+			invis_note = entity
+			break
+		end
+	end
 
-	for i=1,#global.notes do
-		local note = global.notes[i]
-		
-		if note.invis_note == invis_note then
-			return(note)
+	if invis_note then
+		for i=1,#global.notes do
+			local note = global.notes[i]
+			
+			if note.invis_note == invis_note then
+				return(note)
+			end
 		end
 	end
 end
@@ -475,14 +486,13 @@ script.on_event(defines.events.on_robot_built_entity, on_creation )
 --------------------------------------------------------------------------------------
 local function on_destruction( event )
 	local ent = event.entity
-	local ent_name = ent.name
 
 	local this_note = find_note(ent)
 
-	if this_note.invis_note and this_note.invis_note.valid then
+	if this_note and this_note.invis_note and this_note.invis_note.valid then
 		for i,note in pairs(global.notes) do
 			if note.invis_note == this_note.invis_note then
-				debug_print( "on_destruction ", ent_name )
+				debug_print( "on_destruction ", ent.name )
 				destroy_note(note)
 				table.remove(global.notes,i)
 				break
