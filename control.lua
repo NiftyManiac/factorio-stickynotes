@@ -178,7 +178,6 @@ local function decode_note( invis_note )
 
 	local params = invis_note.get_or_create_control_behavior().parameters.parameters
 	local metadata = params[1].count + 2^31
-	debug_print("Metadata: "..metadata)
 
 	note.autoshow = bool(bit32.band(metadata, 2^8))
 	local show_mapmark = bool(bit32.band(metadata, 2^9))
@@ -205,6 +204,8 @@ local function decode_note( invis_note )
 	end
 
 	display_mapmark(note, show_mapmark)
+
+	debug_print("Decoded note: "..note.text)
 
 	return note
 end
