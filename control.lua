@@ -1,5 +1,5 @@
 debug_status = 1
-debug_mod_name = "StickyNotesImproved"
+debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
 require("config")
@@ -380,6 +380,7 @@ script.on_init(on_init)
 -- !! todo migration
 local function on_configuration_changed(data)
 	-- detect any mod or game version change
+	debug_print("Config changed ")
 	if data.mod_changes ~= nil then
 		local changes = data.mod_changes[debug_mod_name]
 		if changes ~= nil then
@@ -398,10 +399,10 @@ local function on_configuration_changed(data)
 					player_mem.note_sel = nil
 				end
 			end
-			
+
 			if changes.old_version and older_version(changes.old_version, "1.0.8") then
-				message_all( "Sticky notes : please now use the ALT-W key instead of ENTER (or redefine it in the menu/options)." )
-				message_all( "Sticky notes : you can now add a text on any entity on the map." )
+				message_all( "Sticky notes: please now use the ALT-W key instead of ENTER (or redefine it in the menu/options)." )
+				message_all( "Sticky notes: you can now add a text on any entity on the map." )
 			end
 			
 			if changes.old_version and older_version(changes.old_version, "1.0.12") then
@@ -412,8 +413,22 @@ local function on_configuration_changed(data)
 					note.is_sign = (ent_name == "sticky-note" or ent_name == "sticky-sign") 
 				end
 				
-				message_all( "Sticky notes : new option to lock notes for admins." )
+				message_all( "Sticky notes: new option to lock notes for admins." )
 			end
+
+			if changes.old_version and older_version(changes.old_version, "2.0.0") then
+				message_all( "StickyNotesImproved: Migrating from old version of StickyNotes to allow for blueprints")
+				-- encode all notes
+				for i,note in pairs(global.notes) do
+					if note.invis_note == nil and note.entity then
+						debug_print('Upgrading '..note.text)
+						note.invis_note = create_invis_note(note.entity)
+						encode_note(note)
+						note.entity = nil
+					end
+				end
+			end
+			
 		end
 	end
 end
