@@ -273,14 +273,20 @@ local function find_note( ent )
 end
 
 --------------------------------------------------------------------------------------
-local function add_note( entity )
+local function register_note( note )
 	global.n_note = global.n_note + 1
+	note.n = n_note;
+	table.insert(global.notes, note)
+end
+
+--------------------------------------------------------------------------------------
+local function add_note( entity )
 	
 	local note =
 	{
-		text = "text " .. global.n_note, -- text
+		text = "text " .. global.n_note+1, -- text
 		color = text_color_default, -- color
-		n = global.n_note, -- number of the note
+		n = nil, -- number of the note
 		fly = nil, -- text entity
 		autoshow = false, -- if true, then note autoshows/hides
 		autohide_tick = game.tick + autohide_time, -- tick when to autohide
@@ -297,7 +303,7 @@ local function add_note( entity )
 	end
 	show_note(note)
 	
-	table.insert(global.notes, note)
+	register_note(note)
 	
 	if mapmark_default == true then
 		display_mapmark(note,true)
@@ -438,13 +444,23 @@ script.on_event(defines.events.on_player_joined_game, on_player_joined_game )
 -- !!fix sign behaviors
 local function on_creation( event )
 	local ent = event.created_entity
-	local force = ent.force
-	local ent_name = ent.name
+	debug_print( "on_creation ", ent.name )
+
+	-- revive note ghosts immediately
+	if ent.name == "entity-ghost" and ent.ghost_name == "invis-note" then
+		items, ent = ent.revive()
+		debug_print(ent.name)
+	end
 	
-	if ent_name == "sticky-note" or ent_name == "sticky-sign" then
-		debug_print( "on_creation ", ent_name )
+	if ent.name == "invis-note" then
+		debug_print("decoding invis-note")
+		note = decode_note(ent)
+		register_note(note)
+		show_note(note)
+		display_mapmark(note, note.mapmark)
+
+	elseif ent.name == "sticky-note" or ent.name == "sticky-sign" then
 		
-		ent.force = force
 		ent.destructible = false
 		ent.operable = false
 		-- ent.minable = false
