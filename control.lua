@@ -269,6 +269,7 @@ local function find_note( ent )
 	local x = ent.position.x
 	local y = ent.position.y
 	local entities = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}
+	local invis_note
 	for _, entity in ipairs(entities) do
 		if entity.position.x==x and entity.position.y==y then
 			invis_note = entity
