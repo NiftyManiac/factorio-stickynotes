@@ -413,7 +413,7 @@ local function on_configuration_changed(data)
             if changes.old_version and older_version(changes.old_version, "1.0.12") then
                 for _,note in pairs(global.notes) do
 					--Not perfect, TODO expand logic to clean when entity is invalid
-                    local ent_name = note.entity.valid and note.entity.name or ""
+                    local ent_name = note.entity and note.entity.valid and note.entity.name or ""
                     note.locked_force = note.locked
                     note.locked_admin = false
                     note.is_sign = (ent_name == "sticky-note" or ent_name == "sticky-sign")
@@ -507,6 +507,7 @@ local function on_creation( event )
             display_mapmark(note, note.mapmark)
         else
             debug_print("No note target found")
+            ent.destroy()
         end
 
     elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
