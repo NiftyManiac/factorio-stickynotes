@@ -276,19 +276,20 @@ local function find_note( ent )
     -- note: find_entity doesn't seem to work when the collision box is 0
     local x = ent.position.x
     local y = ent.position.y
-    local entities = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}
-    local invis_note
-    for _, entity in ipairs(entities) do
-        if entity.position.x==x and entity.position.y==y then
-            invis_note = entity
-            break
-        end
-    end
+    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}[1]
+	game.print(serpent.line(invis_note, {comment=false}))
+    --local invis_note
+    -- for _, entity in ipairs(entities) do
+    --     if entity.position.x==x and entity.position.y==y then
+    --         invis_note = entity
+    --         break
+    --     end
+    -- end
 
     if invis_note then
         for i=1,#global.notes do
             local note = global.notes[i]
-
+			--todo convert to unit_num mapping
             if note.invis_note == invis_note then
                 return(note)
             end
@@ -420,7 +421,8 @@ local function on_configuration_changed(data)
 
             if changes.old_version and older_version(changes.old_version, "1.0.12") then
                 for _,note in pairs(global.notes) do
-                    local ent_name = note.entity.name
+					--Not perfect, TODO expand logic to clean when entity is invalid
+                    local ent_name = note.entity.valid and note.entity.name or ""
                     note.locked_force = note.locked
                     note.locked_admin = false
                     note.is_sign = (ent_name == "sticky-note" or ent_name == "sticky-sign")
@@ -432,7 +434,7 @@ local function on_configuration_changed(data)
             if changes.old_version and older_version(changes.old_version, "2.0.0") then
                 -- encode all notes
                 for _,note in pairs(global.notes) do
-                    if note.invis_note == nil and note.entity then
+                    if note.invis_note == nil and note.entity and note.entity.valid then
                         debug_print('Upgrading '..note.text)
                         note.invis_note = create_invis_note(note.entity)
                         encode_note(note)
@@ -824,6 +826,11 @@ function interface.clean()
         destroy_note(note)
     end
     global.notes = {}
+end
+
+function interface.print_global()
+	game.print(serpent.block(global, {comment=false}))
+	game.write_file("StickyNotes/Global.lua", serpent.block(global, {comment=false}))
 end
 
 remote.add_interface( "notes", interface )
