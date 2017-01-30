@@ -276,9 +276,7 @@ local function find_note( ent )
     -- note: find_entity doesn't seem to work when the collision box is 0
     local x = ent.position.x
     local y = ent.position.y
-    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}[1]
-	--local invis_note = ent.surface.find_entities_filtered{name="invis-note", position=ent.position}[1]
-
+    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.1,y-0.1},{x+0.1, y+0.1}}}[1]
     if invis_note then
         for i=1,#global.notes do
             local note = global.notes[i]
@@ -508,10 +506,13 @@ local function on_creation( event )
             debug_print("No note target found")
         end
 
-    elseif ent.name == "sticky-note" or ent.name == "sticky-sign" then
-        ent.destructible = false
-        ent.operable = false
-        add_note(ent)
+    elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
+		local note = find_note( ent )
+		ent.destructible = false
+		ent.operable = false
+		if not note then
+			add_note(ent)
+		end
     end
 end
 
