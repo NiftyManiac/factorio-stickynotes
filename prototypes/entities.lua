@@ -57,9 +57,9 @@ data:extend(
 			},
 			order = "k-c",
 		},
-		
+
 		note,
-		
+
 		{
 			type = "item",
 			name = "sticky-note",
@@ -70,22 +70,22 @@ data:extend(
 			place_result = "sticky-note",
 			stack_size = 100
 		},
-		
+
 		{
 			type = "recipe",
 			name = "sticky-note",
 			enabled = false,
 			energy_required = 0.5,
-			ingredients = 
-			{      
+			ingredients =
+			{
 				{"wood", 3}
 			},
 			result = "sticky-note",
 			result_count = 1,
 		},
-		
+
 		sign,
-		
+
 		{
 			type = "item",
 			name = "sticky-sign",
@@ -96,14 +96,14 @@ data:extend(
 			place_result = "sticky-sign",
 			stack_size = 100
 		},
-		
+
 		{
 			type = "recipe",
 			name = "sticky-sign",
 			enabled = false,
 			energy_required = 1,
-			ingredients = 
-			{      
+			ingredients =
+			{
 				{"iron-plate", 3}
 			},
 			result = "sticky-sign",
@@ -284,7 +284,7 @@ data:extend(
 		    circuit_wire_max_distance = 7.5
 		    }
 	}
-	)		
+	)
 
 -- to put a label on the map.
 
