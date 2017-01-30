@@ -1,7 +1,7 @@
 --luacheck: globals debug_status debug_mod_name debug_file debug_print num color_array colors bool older_version
 --luacheck: globals use_color_picker note_slot_count autohide_time text_color_default mapmark_default text_default
 
-debug_status = 1
+debug_status = 0
 debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
@@ -277,14 +277,7 @@ local function find_note( ent )
     local x = ent.position.x
     local y = ent.position.y
     local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}[1]
-	game.print(serpent.line(invis_note, {comment=false}))
-    --local invis_note
-    -- for _, entity in ipairs(entities) do
-    --     if entity.position.x==x and entity.position.y==y then
-    --         invis_note = entity
-    --         break
-    --     end
-    -- end
+	--local invis_note = ent.surface.find_entities_filtered{name="invis-note", position=ent.position}[1]
 
     if invis_note then
         for i=1,#global.notes do

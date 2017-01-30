@@ -76,8 +76,7 @@ sticky_note.picture =
     shift = {0,0},
 }
 --sticky_note.collision_mask = "floor-layer"
---sticky_note.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
-sticky_note.collision_box = nil
+sticky_note.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
 sticky_note.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 sticky_note.inventory_size = 1
 
@@ -119,8 +118,7 @@ sticky_sign.picture =
     height = 64,
     shift = {0.5,-0.5},
 }
---sticky_sign.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
-sticky_sign.collision_box = nil
+sticky_sign.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
 sticky_sign.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 -- sticky_sign.collision_mask = "floor-layer"
 sticky_sign.inventory_size = 1
