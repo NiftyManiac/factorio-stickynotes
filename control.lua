@@ -1,8 +1,18 @@
+--luacheck: globals debug_status debug_mod_name debug_file debug_print num color_array colors bool older_version
+--luacheck: globals use_color_picker note_slot_count autohide_time text_color_default mapmark_default text_default
+
 debug_status = 1
 debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
 require("config")
+
+--local refrences for speeeeeeeed
+local bool = bool
+local colors = colors
+local color_array = color_array
+local debug_print = debug_print
+local num = num
 
 local color_picker_interface = "color-picker"
 local open_color_picker_button_name = "open_color_picker_stknt"
@@ -28,7 +38,7 @@ local function menu_note( player, player_mem, open_or_close )
 			gui1 = gui0.add({type = "frame", name = "frm_stknt", caption = {"stknt-gui-title", note.n}, style = "frame_stknt_style"})
 			gui1 = gui1.add({type = "flow", name = "flw_stknt", direction = "vertical", style = "flow_stknt_style"})
 
-			local gui2 = gui1.add({type = "textfield", name = "txt_stknt", text = note.text, style = "textfield_stknt_style"})
+			gui2 = gui1.add({type = "textfield", name = "txt_stknt", text = note.text, style = "textfield_stknt_style"})
 			gui2.style.minimal_width = 400
 
 			if use_color_picker and remote.interfaces[color_picker_interface] then
@@ -83,15 +93,13 @@ end
 --!!
 local function create_invis_note( entity )
 	local surf = entity.surface
-
-	invis_note = surf.create_entity(
+	local invis_note = surf.create_entity(
 		{
 			name = "invis-note",
-		 	position = entity.position,
-		 	direction = entity.direction,
-		 	force = entity.force
+			position = entity.position,
+			direction = entity.direction,
+			force = entity.force
 		 })
-
 	return invis_note
 end
 
@@ -217,7 +225,7 @@ local function show_note( note )
 	if note.invis_note and note.invis_note.valid then
 		local pos = note.invis_note.position
 		local surf = note.invis_note.surface
-		local force = note.invis_note.force
+		--local force = note.invis_note.force
 		local x = pos.x-1
 		local y = pos.y
 
@@ -406,24 +414,24 @@ local function on_configuration_changed(data)
 			end
 
 			if changes.old_version and older_version(changes.old_version, "1.0.8") then
-				message_all( "Sticky Notes: please now use the ALT-W key instead of ENTER (or redefine it in the menu/options)." )
-				message_all( "Sticky Notes: you can now add a text on any entity on the map." )
+				game.print( "Sticky Notes: please now use the ALT-W key instead of ENTER (or redefine it in the menu/options)." )
+				game.print( "Sticky Notes: you can now add a text on any entity on the map." )
 			end
 
 			if changes.old_version and older_version(changes.old_version, "1.0.12") then
-				for i,note in pairs(global.notes) do
+				for _,note in pairs(global.notes) do
 					local ent_name = note.entity.name
 					note.locked_force = note.locked
 					note.locked_admin = false
 					note.is_sign = (ent_name == "sticky-note" or ent_name == "sticky-sign")
 				end
 
-				message_all( "Sticky Notes: new option to lock notes for admins." )
+				game.print( "Sticky Notes: new option to lock notes for admins." )
 			end
 
 			if changes.old_version and older_version(changes.old_version, "2.0.0") then
 				-- encode all notes
-				for i,note in pairs(global.notes) do
+				for _,note in pairs(global.notes) do
 					if note.invis_note == nil and note.entity then
 						debug_print('Upgrading '..note.text)
 						note.invis_note = create_invis_note(note.entity)
@@ -437,7 +445,7 @@ local function on_configuration_changed(data)
 						show_note(note)
 					end
 				end
-				message_all( "Sticky Notes: notes will now persist through blueprints, and can be shrared with blueprint strings.")
+				game.print( "Sticky Notes: notes will now persist through blueprints, and can be shrared with blueprint strings.")
 			end
 
 		end
@@ -486,15 +494,18 @@ local function on_creation( event )
 
 	-- revive note ghosts immediately
 	if ent.name == "entity-ghost" and ent.ghost_name == "invis-note" then
-		items, ent = ent.revive()
-		debug_print(ent.name)
+		local revived, rev_ent = ent.revive()
+		if revived then
+			debug_print("Revived invis-note")
+			ent = rev_ent
+		end
 	end
 
 	if ent.name == "invis-note" then
 		local note_target = ent.surface.find_entities_filtered{position=ent.position}[1]
 		if note_target and note_target.name ~= "invis-note" then
 			debug_print("Decoding invis-note")
-			note = decode_note(ent)
+			local note = decode_note(ent)
 			register_note(note)
 			show_note(note)
 			display_mapmark(note, note.mapmark)
@@ -503,11 +514,8 @@ local function on_creation( event )
 		end
 
 	elseif ent.name == "sticky-note" or ent.name == "sticky-sign" then
-
 		ent.destructible = false
 		ent.operable = false
-		-- ent.minable = false
-
 		add_note(ent)
 	end
 end
@@ -538,12 +546,12 @@ script.on_event(defines.events.on_robot_pre_mined, on_destruction )
 script.on_event(defines.events.on_preplayer_mined_item, on_destruction )
 
 --------------------------------------------------------------------------------------
-local function on_tick(event)
+local function on_tick()
 	if global.tick <= 0 then
 		--  auto show notes
 		global.tick = 28
 
-		for _, player in pairs(game.players) do
+		for _, player in pairs(game.connected_players) do
 			local selected = player.selected
 
 			if selected then
@@ -726,7 +734,7 @@ end
 script.on_event(defines.events.on_gui_click, on_gui_click)
 
 --------------------------------------------------------------------------------------
-function on_hotkey_write(event)
+local function on_hotkey_write(event)
 	local player = game.players[event.player_index]
 	local player_mem = global.player_mem[player.index]
 	local selected = player.selected
@@ -813,11 +821,9 @@ local interface = {}
 
 function interface.clean()
 	debug_print( "clean" )
-
-	for i,note in pairs(global.notes) do
+	for _,note in pairs(global.notes) do
 		destroy_note(note)
 	end
-
 	global.notes = {}
 end
 
