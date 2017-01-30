@@ -60,7 +60,7 @@ local function menu_note( player, player_mem, open_or_close )
                     tooltip = {"stknt-gui-locked-force-tt"}, style = "checkbox_stknt_style"})
             if player.admin then
                 gui1.add({type = "checkbox", name = "chk_stknt_locked_admin", caption = {"stknt-gui-locked-admin"}, state = note.locked_admin,
-                        tooltip = {"stknt-gui-locked-force-tt"}, style = "checkbox_stknt_style"})
+                        tooltip = {"stknt-gui-locked-admin-tt"}, style = "checkbox_stknt_style"})
             end
 
             gui1.add({type = "button", name = "but_stknt_delete", caption = {"stknt-gui-delete"},

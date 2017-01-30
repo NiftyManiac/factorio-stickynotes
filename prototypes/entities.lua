@@ -67,6 +67,7 @@ local sticky_note_item = {
 
 local sticky_note = dupli_proto( "container", "wooden-chest", "sticky-note" )
 sticky_note.icon = "__StickyNotes__/graphics/sticky-note.png"
+sticky_note.max_health = 0
 sticky_note.picture =
 {
     filename = "__StickyNotes__/graphics/sticky-note.png",
@@ -110,6 +111,7 @@ local sticky_sign_item = {
 
 local sticky_sign = dupli_proto( "container", "wooden-chest", "sticky-sign" )
 sticky_sign.icon = "__StickyNotes__/graphics/sign-icon.png"
+sticky_sign.max_health = 0
 sticky_sign.picture =
 {
     filename = "__StickyNotes__/graphics/sign.png",
@@ -135,7 +137,7 @@ local invis_note_item ={
     subgroup = "circuit-network",
     place_result="invis-note",
     order = "b[combinators]-c[invis-note]",
-    stack_size= 50,
+    stack_size = 1,
 }
 
 local invis_note = {
@@ -270,14 +272,21 @@ local mapmark_anim =
 }
 
 local mapmark = dupli_proto("train-stop","train-stop","sticky-note-mapmark")
-mapmark.minable.result = "train-stop"
-mapmark.collision_box = {{0,0}, {0,0}}
-mapmark.selection_box = {{0,0}, {0,0}}
-mapmark.drawing_box = {{0,0}, {0,0}}
-mapmark.order = "y"
+mapmark.icon = "__StickyNotes__/graphics/sign-icon.png"
+mapmark.minable = nil
+mapmark.max_health = 0
+mapmark.corpse = nil
+mapmark.selectable_in_game = false
+mapmark.flags = nil
+mapmark.collision_box = nil
+mapmark.selection_box = nil
+mapmark.drawing_box = nil
+mapmark.order = nil
 mapmark.selectable_in_game = false
 mapmark.tile_width = 1
 mapmark.tile_height = 1
+mapmark.working_sound = nil
+mapmark.vehicle_impact_sound = nil
 mapmark.rail_overlay_animations =
 {
     north = mapmark_anim,
