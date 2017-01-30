@@ -221,7 +221,7 @@ local function show_note( note )
 		local x = pos.x-1
 		local y = pos.y
 
-		local fly = surf.create_entity({name="flying-text",text=note.text,color=note.color,position={x=x,y=y}})
+		local fly = surf.create_entity({name="sticky-text",text=note.text,color=note.color,position={x=x,y=y}})
 		if fly then
 			note.fly = fly
 			note.fly.active = false
@@ -429,6 +429,12 @@ local function on_configuration_changed(data)
 						note.invis_note = create_invis_note(note.entity)
 						encode_note(note)
 						note.entity = nil
+					end
+					--convert old flying-text to new flying-text
+					if note.fly and note.fly.valid and note.fly.name == "flying-text" then
+						note.fly.destroy()
+						note.fly = nil
+						show_note(note)
 					end
 				end
 				message_all( "Sticky Notes: notes will now persist through blueprints, and can be shrared with blueprint strings.")
