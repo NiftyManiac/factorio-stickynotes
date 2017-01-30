@@ -179,7 +179,7 @@ function debug_active(...)
 	end
 end
 
-if debug_status > 0 then debug_print = debug_active else debug_print = function() end end
+if debug_status and debug_status > 0 then debug_print = debug_active else debug_print = function() end end
 
 --------------------------------------------------------------------------------------
 function message_all(s)
