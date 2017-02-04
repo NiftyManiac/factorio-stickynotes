@@ -74,14 +74,14 @@ local author_name2 = "binbin"
 --------------------------------------------------------------------------------------
 function num(var)
   return var and 1 or 0
-end			
+end
 
 --------------------------------------------------------------------------------------
 function bool(num)
 	if num ~= 0 then
 		return true
 	end
-	return false 
+	return false
 end
 
 --------------------------------------------------------------------------------------
@@ -94,14 +94,14 @@ end
 function compare_versions(v1,v2)
 	local v1a, v1b, v1c = string.match(v1, "(%d+).(%d+).(%d+)")
 	local v2a, v2b, v2c = string.match(v2, "(%d+).(%d+).(%d+)")
-	
+
 	v1a = tonumber(v1a)
 	v1b = tonumber(v1b)
 	v1c = tonumber(v1c)
 	v2a = tonumber(v2a)
 	v2b = tonumber(v2b)
 	v2c = tonumber(v2c)
-	
+
 	if v1a > v2a then
 		return 1
 	elseif v1a < v2a then
@@ -124,14 +124,14 @@ function older_version(v1,v2)
 	local v1a, v1b, v1c = string.match(v1, "(%d+).(%d+).(%d+)")
 	local v2a, v2b, v2c = string.match(v2, "(%d+).(%d+).(%d+)")
 	local ret
-	
+
 	v1a = tonumber(v1a)
 	v1b = tonumber(v1b)
 	v1c = tonumber(v1c)
 	v2a = tonumber(v2a)
 	v2b = tonumber(v2b)
 	v2c = tonumber(v2c)
-	
+
 	if v1a > v2a then
 		ret = false
 	elseif v1a < v2a then
@@ -145,9 +145,9 @@ function older_version(v1,v2)
 	else
 		ret = false
 	end
-	
+
 	debug_print( "older_version ", v1, "<", v2, "=", ret )
-	
+
 	return(ret)
 end
 
@@ -155,7 +155,7 @@ end
 function debug_active(...)
 	-- can be called everywhere, except in on_load where game is not existing
 	local s = ""
-	
+
 	for i, v in ipairs({...}) do
 		s = s .. tostring(v)
 	end
@@ -227,7 +227,7 @@ end
 --------------------------------------------------------------------------------------
 function surface_area(surf)
 	local x1, y1, x2, y2 = 0,0,0,0
-	
+
 	for chunk in surf.get_chunks() do
 		if chunk.x < x1 then
 			x1 = chunk.x
@@ -240,7 +240,7 @@ function surface_area(surf)
 			y2 = chunk.y
 		end
 	end
-	
+
 	return( {{x1*32-8,y1*32-8},{x2*32+40,y2*32+40}} )
 end
 
@@ -310,7 +310,7 @@ end
 
 --------------------------------------------------------------------------------------
 function dupli_proto( type, name1, name2 )
-	if data.raw[type][name1] then 
+	if data.raw[type][name1] then
 		local proto = table.deepcopy(data.raw[type][name1])
 		proto.name = name2
 		if proto.minable and proto.minable.result then proto.minable.result = name2	end
@@ -354,4 +354,3 @@ function extract_monolith(filename, x, y, w, h)
 		},
 	}
 end
-

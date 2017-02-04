@@ -20,7 +20,7 @@ data:extend(
 --------------------------------------------------------------------------------------
 local default_gui = data.raw["gui-style"].default
 
-default_gui.frame_stknt_style = 
+default_gui.frame_stknt_style =
 {
 	type="frame_style",
 	parent="frame_style",
@@ -33,21 +33,21 @@ default_gui.frame_stknt_style =
 	-- max_on_row = 1,
 }
 
-default_gui.flow_stknt_style = 
+default_gui.flow_stknt_style =
 {
 	type = "flow_style",
-	
+
 	top_padding = 0,
 	bottom_padding = 0,
 	left_padding = 0,
 	right_padding = 0,
-	
+
 	horizontal_spacing = 2,
 	vertical_spacing = 2,
 	resize_row_to_width = true,
 	resize_to_row_height = false,
 	max_on_row = 1,
-	
+
 	graphical_set = { type = "none" },
 }
 
@@ -98,9 +98,9 @@ default_gui.textfield_stknt_style =
 		corner_size = {3, 3},
 		position = {16, 0}
 	},
-}    
+}
 
-default_gui.button_stknt_style = 
+default_gui.button_stknt_style =
 {
 	type="button_style",
 	parent="button_style",
@@ -134,4 +134,3 @@ default_gui.checkbox_stknt_style =
 	-- minimal_height = 32,
 	-- maximal_height = 32,
 }
-
