@@ -485,12 +485,9 @@ local function on_creation( event )
     local ent = event.created_entity
     debug_print( "on_creation ", ent.name )
 
-	-- There is a bug here with this logic to test it out create a blueprint and click drag it,
-	-- it will make lots of invis notes.  -- I have a few ideas on how to fix it but will need time to test
-
     -- revive note ghosts immediately
     if ent.name == "entity-ghost" and ent.ghost_name == "invis-note" then
-		local revived, rev_ent = ent.revive()
+        local revived, rev_ent = ent.revive()
         if revived then
             debug_print("Revived invis-note")
             ent = rev_ent
