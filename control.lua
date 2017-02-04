@@ -276,7 +276,7 @@ local function find_note( ent )
     -- note: find_entity doesn't seem to work when the collision box is 0
     local x = ent.position.x
     local y = ent.position.y
-    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.1,y-0.1},{x+0.1, y+0.1}}}[1]
+    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}[1]
     if invis_note then
         for i=1,#global.notes do
             local note = global.notes[i]
