@@ -1,7 +1,7 @@
 --luacheck: globals debug_status debug_mod_name debug_file debug_print num color_array colors bool older_version
 --luacheck: globals use_color_picker note_slot_count autohide_time text_color_default mapmark_default text_default
 
-debug_status = 0
+debug_status = 0 -- 0=silent, 1=log to file, 2=log to file and print
 debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
@@ -106,9 +106,19 @@ end
 --------------------------------------------------------------------------------------
 -- store the note data into an existing invis-note
 local function encode_note( note )
+    local encoding_version = 1
     local invis_note = note.invis_note
 
     if invis_note then
+        -- metadata bytes (big endian): <encoding version>, <reserved>, <flags>, <color index>
+        local metadata = 0
+        metadata = bit32.replace(metadata, encoding_version, 24, 8)
+
+        metadata = bit32.replace(metadata, num(note.autoshow), 8)
+        metadata = bit32.replace(metadata, num(note.mapmark ~= nil), 9)
+        metadata = bit32.replace(metadata, num(note.locked_force), 10)
+        metadata = bit32.replace(metadata, num(note.locked_admin), 11)
+
         local color = note.color
         local color_index
         for i, v in ipairs(color_array) do
@@ -125,11 +135,8 @@ local function encode_note( note )
         debug_print("Color: "..note.color.r..note.color.g..note.color.b)
         debug_print("Color index: "..color_index)
 
-        local metadata = color_index +
-        num(note.autoshow) * 2 ^ 8 +
-        num(note.mapmark ~= nil) * 2 ^ 9 +
-        num(note.locked_force) * 2 ^ 10 +
-        num(note.locked_admin) * 2 ^ 11
+        metadata = bit32.replace(metadata, color_index, 0, 8)
+
         debug_print("Encoded metadata: "..metadata)
 
         -- array of encoded values to store in the invis-note
@@ -146,7 +153,7 @@ local function encode_note( note )
             local shift = (i-1)%4 * 8
             local val
             if i == #note.text+1 then
-                val = 3 -- string termination
+                val = 0 -- string termination
             else
                 val = string.byte(note.text,i)
             end
@@ -179,7 +186,11 @@ local function encode_note( note )
 end
 
 --------------------------------------------------------------------------------------
--- decode an invis_note and return a note object. Also, create a mapmark if needed
+-- decode an invis_note and return a note object. Also, create a mapmark if needed.
+-- returns nil if decode failed
+-- encoding versions changes:
+--  2.0.0: 0
+--  2.0.1: 1
 local function decode_note( invis_note )
     local note = {}
     note.invis_note = invis_note
@@ -187,33 +198,45 @@ local function decode_note( invis_note )
     local params = invis_note.get_or_create_control_behavior().parameters.parameters
     local metadata = params[1].count + 2^31
 
-    note.autoshow = bool(bit32.band(metadata, 2^8))
-    local show_mapmark = bool(bit32.band(metadata, 2^9))
-    note.locked_force = bool(bit32.band(metadata, 2^10))
-    note.locked_admin = bool(bit32.band(metadata, 2^11))
+    local version = bit32.extract(metadata, 24, 8)
 
-    local color_i = bit32.band(metadata, 255)
-    note.color = color_array[color_i]
-    if note.color == nil then
-        debug_print("Failed to decode color")
+    local terminator = 0
+    if version==0 then
+        terminator = 3
     end
 
-    note.text = ""
-    for i = 1, (note_slot_count-1)*4 do
-        local signal_i = math.floor((i-1)/4)
-        local shift = (i-1)%4 * 8
-        local mask = bit32.lshift(255, shift)
+    if version==0 or version==1 then
+        note.autoshow = bool(bit32.extract(metadata, 8))
+        local show_mapmark = bool(bit32.extract(metadata, 9))
+        note.locked_force = bool(bit32.extract(metadata, 10))
+        note.locked_admin = bool(bit32.extract(metadata, 11))
 
-        local byte = bit32.rshift(bit32.band(params[signal_i+2].count+2^31, mask), shift)
-        if byte == 3 then
-            break
+        local color_i = bit32.extract(metadata, 0, 8) 
+        note.color = color_array[color_i]
+        if note.color == nil then
+            debug_print("Failed to decode color")
         end
-        note.text = note.text .. string.char(byte)
+
+        note.text = ""
+        for i = 1, (note_slot_count-1)*4 do
+            local signal_i = math.floor((i-1)/4)
+            local shift = (i-1)%4 * 8
+
+            local byte = bit32.extract(params[signal_i+2].count+2^31, shift, 8)
+            if byte == terminator then
+                break
+            end
+            note.text = note.text .. string.char(byte)
+        end
+
+        display_mapmark(note, show_mapmark)
+
+    else
+        game.print("StickyNotes failed to decode a note, as it was made with a newer version of the mod. Please install the newest version of StickyNotes and try again.")
+        return
     end
 
-    display_mapmark(note, show_mapmark)
-
-    debug_print("Decoded note: "..note.text)
+    debug_print("Decoded note (ver "..version.."): "..note.text)
 
     return note
 end
@@ -499,9 +522,17 @@ local function on_creation( event )
         if note_target and note_target.name ~= "invis-note" then
             debug_print("Decoding invis-note")
             local note = decode_note(ent)
-            register_note(note)
-            show_note(note)
-            display_mapmark(note, note.mapmark)
+            if note then
+                register_note(note)
+                show_note(note)
+                display_mapmark(note, note.mapmark)
+            else
+                -- we could keep around the invis-note in case they install a newer version that makes it readable
+                -- but then we'd have to keep track of the invis-notes on the map, instead of just decoding on creation
+                debug_print("Decoding failed")
+                ent.destroy()
+            end
+
         else
             debug_print("No note target found")
             ent.destroy()
