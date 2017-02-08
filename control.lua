@@ -464,7 +464,7 @@ local function on_configuration_changed(data)
                         show_note(note)
                     end
                 end
-                game.print( "Sticky Notes: notes will now persist through blueprints, and can be shrared with blueprint strings.")
+                game.print( "Sticky Notes: notes will now persist through blueprints, and can be shared with blueprint strings.")
             end
 
         end
