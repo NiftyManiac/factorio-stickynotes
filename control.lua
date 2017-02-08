@@ -301,11 +301,12 @@ local function find_note( ent )
     -- note: find_entity doesn't seem to work when the collision box is 0
     local x = ent.position.x
     local y = ent.position.y
-    local invis_note = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}[1]
-    if invis_note then
-        for i=1,#global.notes do
-            local note = global.notes[i]
-			--todo convert to unit_num mapping
+    local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}
+
+    for i=1,#global.notes do
+        local note = global.notes[i]
+		--todo convert to unit_num mapping
+        for _,invis_note in ipairs(invis_notes) do
             if note.invis_note == invis_note then
                 return(note)
             end
@@ -520,8 +521,9 @@ local function on_creation( event )
     end
 
     if ent.name == "invis-note" then
-        local note_target = ent.surface.find_entities_filtered{position=ent.position}[1]
-        if note_target and note_target.name ~= "invis-note" then
+        local note_target = ent.surface.find_entities_filtered{name="entity-ghost",position=ent.position}[1]
+        -- only place an invis-note on a ghost, if that ghost doesn't already have a note
+        if note_target and find_note(note_target) == nil then
             debug_print("Decoding invis-note")
             local note = decode_note(ent)
             if note then
@@ -536,7 +538,7 @@ local function on_creation( event )
             end
 
         else
-            debug_print("No note target found")
+            debug_print("No valid note target found")
             ent.destroy()
         end
 
