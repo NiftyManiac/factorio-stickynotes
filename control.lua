@@ -14,6 +14,8 @@ local color_array = color_array
 local debug_print = debug_print
 local num = num
 
+local max_chars = 4*(note_slot_count-1)-1 -- max length of storable string
+
 local color_picker_interface = "color-picker"
 local open_color_picker_button_name = "open_color_picker_stknt"
 local color_picker_name = "color_picker_stknt"
@@ -624,6 +626,11 @@ local function on_gui_text_changed(event)
         local note = player_mem.note_sel
 
         if note then
+            if #event.element.text > max_chars then
+                event.element.text = string.sub(event.element.text, 1, max_chars)
+                game.print("StickyNotes: Notes are limited to "..max_chars.." in length. To raise this limit, edit config.lua.")
+            end
+
             note.text = event.element.text
             encode_note(note)
 
