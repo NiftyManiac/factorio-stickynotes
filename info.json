@@ -4,7 +4,7 @@
 	"title": "Sticky Notes Improved",
 	"author": "BinbinHfr, NiftyManiac",
 	"description": "Now with blueprint support. Add annotations to any object with ALT+W, or use sticky notes and signs to make them stand out",
-	"homepage": "",
+	"homepage": "https://forums.factorio.com/viewtopic.php?f=92&t=30980&p=195631",
 	"factorio_version":"0.14",
 	"dependencies":["? color-picker >= 0.1.1"]
 }
