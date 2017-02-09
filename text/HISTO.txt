@@ -1,7 +1,7 @@
 ##VERSIONS:
-2.1.0   - Changed how notes are stored internally to fix various bugs
+2.1.0   - First 2.x release. Changed how notes are stored internally to fix various bugs
 2.0.1	- Various bugfixes and minor change to encoding
-2.0.0	- Forked as StickyNotes Improved, adding support for blueprints
+2.0.0	- Development taken over by NiftyManiac, adding support for blueprints
 1.0.13	- add mapmark_default and text_default in config.lua
 1.0.12	- new "locked by admin" option, to avoid edition and deletion by non-admins.
 1.0.11	- integrate colorpicker support by Mooncat for fine color tuning !

@@ -1,15 +1,16 @@
 [b][size=150]Infos[/size][/b]
 [list]
 [*]Type: Mod
-[*]Name: Sticky Notes Improved
+[*]Name: Sticky Notes
 [*]Description: Build notes and add annotations to objects
-[*]Tested with Factorio-version: 0.14.21
+[*]Tested with Factorio version: 0.14.21
 [*]Locale: English, French, Russian
-[*]Multiplayer compatible: tested on a headless server.
+[*]Multiplayer compatible: tested on a headless server. (Note: version 2.x hasn't yet been tested on multiplayer. Let me know if there are any issues).
 [*]Tags: Note, message.
-[*]License: You are free to use and distribute this mod and also to modify it for personal use, but not to release a modified version without permission (unless visibly not maintained anymore). Please contribute via github.
+[*]License: MIT License. I'd appreciate if you contribute via github instead of forking if I'm still maintaining it, though.
+[*]Authors: Originally developed by BinbinHfr, taken over by NiftyManiac. Thanks to Nexela for contributions.
 [*]Source: https://github.com/NiftyManiac/factorio-stickynotes
-[*]Portal download : https://mods.factorio.com/mods/binbinhfr/StickyNotes[/list]
+[*]Portal download : https://mods.factorio.com/mods/NiftyManiac/StickyNotes[/list]
 [attachment=1]logo.jpg[/attachment]
 [spoiler=DESCRIPTION][b][size=150]DESCRIPTION[/size][/b]
 Do you want to stick notes on the map, as a reminder for yourself, or as a message for other players when they are visiting your area or when they will connect later? Do you want to annotate your designs when sharing blueprints with others?
@@ -30,12 +31,9 @@ You can redefine the ALT-W key in menu/options/controls/mod.
 
 Now the mod integrates the optional colorpicker by Mooncat for fine color tuning!
 Give it a try and download it here: https://mods.factorio.com/mods/Mooncat/color-picker
-Warning: custom colors will not work with blueprinting functionality.
+Warning: custom colors don't currently work with blueprinting functionality.
 
 That's all folks!
 
-Have fun with Factorio ![/spoiler]
+Have fun with Factorio![/spoiler]
 [attachment=0]screen2b.jpg[/attachment]
-[b][size=150]Download[/size][/b]
-For Factorio 0.13.X :
-[color=#00BF80]Please use the portal for downloads (see link above or use ingame mod install/update).[/color]
