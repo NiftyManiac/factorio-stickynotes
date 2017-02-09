@@ -123,7 +123,7 @@ local function encode_note( note )
 
         local color = note.color
         local color_index
-        for i, v in ipairs(color_array) do
+        for i, v in pairs(color_array) do
             if color.r == v.r and color.g == v.g and color.b == v.b then
                 color_index = i
                 break
@@ -169,7 +169,7 @@ local function encode_note( note )
         end
 
         local params = {}
-        for i, v in ipairs(signal_vals) do
+        for i, v in pairs(signal_vals) do
             table.insert(params,
                 {
                     signal =
@@ -193,9 +193,11 @@ end
 -- encoding versions changes:
 --  2.0.0: 0
 --  2.0.1: 1
-local function decode_note( invis_note )
+local function decode_note( invis_note, target )
     local note = {}
     note.invis_note = invis_note
+    note.target = target
+    note.target_unit_number = target.unit_number -- needed in case target becomes invalid
 
     local params = invis_note.get_or_create_control_behavior().parameters.parameters
     local metadata = params[1].count + 2^31
@@ -291,27 +293,21 @@ local function destroy_note( note )
     end
     note.mapmark = nil
 
+    global.notes_by_invis[note.invis_note.unit_number] = nil
+    global.notes_by_target[note.target_unit_number] = nil
+
     if note.invis_note and note.invis_note.valid then
         note.invis_note.destroy()
     end
 end
 
 --------------------------------------------------------------------------------------
-local function find_note( ent )
-    -- note: find_entity doesn't seem to work when the collision box is 0
-    local x = ent.position.x
-    local y = ent.position.y
-    local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-0.01,y-0.01},{x+0.01, y+0.01}}}
-
-    for i=1,#global.notes do
-        local note = global.notes[i]
-		--todo convert to unit_num mapping
-        for _,invis_note in ipairs(invis_notes) do
-            if note.invis_note == invis_note then
-                return(note)
-            end
-        end
+-- lookup the note of an invis-note or a target entity
+local function get_note( ent )
+    if ent.name == "invis-note" then
+        return global.notes_by_invis[ent.unit_number]
     end
+    return global.notes_by_target[ent.unit_number]
 end
 
 --------------------------------------------------------------------------------------
@@ -319,7 +315,18 @@ local function register_note( note )
     debug_print("Registering note")
     global.n_note = global.n_note + 1
     note.n = global.n_note;
-    table.insert(global.notes, note)
+    global.notes_by_target[note.target.unit_number] = note
+    global.notes_by_invis[note.invis_note.unit_number] = note
+end
+--------------------------------------------------------------------------------------
+
+local function update_note_target(note, new_target)
+    if note.target then
+        global.notes_by_target[note.target_unit_number] = nil
+    end
+    note.target = new_target
+    note.target_unit_number = new_target.unit_number
+    global.notes_by_target[new_target.unit_number] = note
 end
 
 --------------------------------------------------------------------------------------
@@ -339,6 +346,8 @@ local function add_note( entity )
         editer = nil, -- player currently editing
         is_sign = (entity.name == "sticky-note" or entity.name == "sticky-sign"), -- is connected to a real note/sign object
         invis_note = create_invis_note(entity),
+        target = entity,
+        target_unit_number = entity.unit_number -- needed in case target becomes invalid
     }
 
     if text_default ~= nil then
@@ -358,6 +367,29 @@ local function add_note( entity )
 end
 
 --------------------------------------------------------------------------------------
+local function update_instant_blueprints_enabled()
+    if game.active_mods['instant-blueprints'] then
+        global.instant_blueprints_enabled = true
+    elseif game.active_mods['creative-mode'] then
+        global.instant_blueprints_enabled = remote.call("creative-mode","is_enabled")
+    else
+        global.instant_blueprints_enabled = false
+    end
+    debug_print("instant blueprints: ",global.instant_blueprints_enabled)
+end
+
+local function instant_blueprint_mods_changed()
+    debug_print("on mods changed")
+
+    if game.active_mods['creative-mode'] then
+        script.on_event(remote.call("creative-mode","on_enabled"), update_instant_blueprints_enabled)
+        script.on_event(remote.call("creative-mode","on_disabled"), update_instant_blueprints_enabled)
+    end
+
+    update_instant_blueprints_enabled()
+end
+
+--------------------------------------------------------------------------------------
 local function init_globals()
     -- initialize or update general globals of the mod
     debug_print( "init_globals" )
@@ -365,8 +397,10 @@ local function init_globals()
     global.tick = global.tick or 0
     global.player_mem = global.player_mem or {}
 
-    global.notes = global.notes or {}
+    global.notes_by_invis = global.notes_by_invis or {}
+    global.notes_by_target = global.notes_by_target or {}
     global.n_note = global.n_note or 0
+    global.instant_blueprints_enabled = global.instant_blueprints_enabled or false
 end
 
 --------------------------------------------------------------------------------------
@@ -403,13 +437,15 @@ local function on_init()
     debug_print( "on_init" )
     init_globals()
     init_players()
+    instant_blueprint_mods_changed()
 end
 
 script.on_init(on_init)
 
 --------------------------------------------------------------------------------------
--- !! todo migration
 local function on_configuration_changed(data)
+    instant_blueprint_mods_changed()
+
     -- detect any mod or game version change
     debug_print("Config changed ")
     if data.mod_changes ~= nil then
@@ -455,6 +491,10 @@ local function on_configuration_changed(data)
                         debug_print('Upgrading '..note.text)
                         note.invis_note = create_invis_note(note.entity)
                         encode_note(note)
+
+                        update_note_target(note, note.entity)
+                        global.notes_by_invis[note.invis_note.unit_number] = note
+
                         note.entity = nil
                     end
                     --convert old flying-text to new flying-text
@@ -464,9 +504,23 @@ local function on_configuration_changed(data)
                         show_note(note)
                     end
                 end
+                global.notes = nil
                 game.print( "Sticky Notes: notes will now persist through blueprints, and can be shared with blueprint strings.")
-            end
 
+            elseif changes.old_version and older_version(changes.old_version, "2.1.0") then --elseif is not a typo, there's two separate migrations here  
+                -- replace global.notes with global.notes_by_invis and global.notes_by_target
+                for _,note in pairs(global.notes) do
+                    local invis_note = note.invis_note
+                    local targets = invis_note.surface.find_entities_filtered{position=invis_note.position}
+                    for _,target in pairs(targets) do
+                        if target ~= invis_note then
+                            update_note_target(note, target)
+                            global.notes_by_invis[note.invis_note.unit_number] = note
+                            break
+                        end
+                    end
+                end
+            end
         end
     end
 end
@@ -509,7 +563,11 @@ script.on_event(defines.events.on_player_joined_game, on_player_joined_game )
 -- !!fix sign behaviors
 local function on_creation( event )
     local ent = event.created_entity
-    debug_print( "on_creation ", ent.name )
+    local debug_name = ent.name
+    if debug_name=="entity-ghost" then
+        debug_name = debug_name.." "..ent.ghost_name
+    end
+    debug_print( "on_creation ", debug_name, " ", ent.unit_number)
 
     -- revive note ghosts immediately
     if ent.name == "entity-ghost" and ent.ghost_name == "invis-note" then
@@ -521,11 +579,23 @@ local function on_creation( event )
     end
 
     if ent.name == "invis-note" then
-        local note_target = ent.surface.find_entities_filtered{name="entity-ghost",position=ent.position}[1]
+        local note_target
+        if global.instant_blueprints_enabled then
+            local note_targets = ent.surface.find_entities_filtered{position=ent.position}
+            for _,target in pairs(note_targets) do
+                debug_print("target"..target.name)
+                if target.name=="entity-ghost" or target.prototype.has_flag("player-creation") then
+                    note_target = target
+                    break
+                end
+            end
+        else
+            note_target = ent.surface.find_entities_filtered{name="entity-ghost",position=ent.position}[1]
+        end
         -- only place an invis-note on a ghost, if that ghost doesn't already have a note
-        if note_target and find_note(note_target) == nil then
+        if note_target and get_note(note_target) == nil then
             debug_print("Decoding invis-note")
-            local note = decode_note(ent)
+            local note = decode_note(ent, note_target)
             if note then
                 register_note(note)
                 show_note(note)
@@ -543,12 +613,28 @@ local function on_creation( event )
         end
 
     elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
-		local note = find_note( ent )
+		local note = global.notes_by_target[ent.unit_number]
 		ent.destructible = false
 		ent.operable = false
 		if not note then
 			add_note(ent)
 		end
+    
+    elseif ent.name ~= "entity-ghost" then -- when a normal item is placed figure out what ghosts are destroyed
+        debug_print("Placed nonghost")
+        local x = ent.position.x
+        local y = ent.position.y
+        local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-10,y-10},{x+10, y+10}}}
+        for _,invis_note in pairs(invis_notes) do
+            local note = get_note(invis_note)
+            if not note.target.valid then -- if we deleted a ghost with this placement
+                if math.abs(invis_note.position.x-x)<0.01 and math.abs(invis_note.position.y-y)<0.01 then -- if we replaced a correct ghost, reassign
+                    update_note_target(note, ent)
+                else -- we destroyed an unrelated ghost
+                    destroy_note(note)
+                end
+            end
+        end
     end
 end
 
@@ -559,23 +645,35 @@ script.on_event(defines.events.on_robot_built_entity, on_creation )
 local function on_destruction( event )
     local ent = event.entity
 
-    local this_note = find_note(ent)
+    local note = get_note(ent)
 
-    if this_note and this_note.invis_note and this_note.invis_note.valid then
-        for i,note in pairs(global.notes) do
-            if note.invis_note == this_note.invis_note then
-                debug_print( "on_destruction ", ent.name )
-                destroy_note(note)
-                table.remove(global.notes,i)
-                break
-            end
-        end
+    if note then
+        debug_print( "on_destruction ", ent.name )
+        destroy_note(note)
     end
 end
 
 script.on_event(defines.events.on_entity_died, on_destruction )
 script.on_event(defines.events.on_robot_pre_mined, on_destruction )
 script.on_event(defines.events.on_preplayer_mined_item, on_destruction )
+
+--------------------------------------------------------------------------------------
+local function on_marked_for_deconstruction( event )
+    local ent = event.entity
+    local force = game.players[event.player_index].force
+
+    if ent.name == "invis-note" then
+        local note = get_note(ent)
+        debug_print("Marked for decon")
+        if not note.target.valid or note.target.name == "entity-ghost" then 
+            destroy_note(note)
+        else -- if target is still valid, just cancel deconstruction
+            ent.cancel_deconstruction(force)
+        end
+    end
+end
+
+script.on_event(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 
 --------------------------------------------------------------------------------------
 local function on_tick()
@@ -587,7 +685,7 @@ local function on_tick()
             local selected = player.selected
 
             if selected then
-                local note = find_note(selected)
+                local note = get_note(selected)
                 if note and note.autoshow then
                     show_note(note)
                 end
@@ -597,16 +695,13 @@ local function on_tick()
     elseif global.tick == 13 then
         -- cleaning and auto hiding notes
 
-        for i=#global.notes,1,-1 do
-            local note = global.notes[i]
-
+        for _,note in pairs(global.notes_by_invis) do
             if note.invis_note and note.invis_note.valid then
                 if note.autoshow and note.fly and note.editer == nil and game.tick > note.autohide_tick then
                     hide_note(note)
                 end
             else
                 destroy_note(note)
-                table.remove(global.notes,i)
             end
         end
     end
@@ -672,13 +767,7 @@ local function on_gui_click(event)
         local note = player_mem.note_sel
 
         if note then
-            for i,note2 in pairs(global.notes) do
-                if note2 == note then
-                    destroy_note(note)
-                    table.remove(global.notes,i)
-                    break
-                end
-            end
+            destroy_note(note)
             menu_note(player,player_mem,false)
             player_mem.note_sel = nil
         end
@@ -777,7 +866,7 @@ local function on_hotkey_write(event)
     local note = nil
 
     if selected and player.force.technologies["sticky-notes"].researched then
-        note = find_note(selected)
+        note = get_note(selected)
 
         if note == nil and player.force == selected.force then
             -- add a new note
@@ -855,12 +944,45 @@ end
 --------------------------------------------------------------------------------------
 local interface = {}
 
-function interface.clean()
-    debug_print( "clean" )
-    for _,note in pairs(global.notes) do
+function interface.delete_all()
+    debug_print( "delete all" )
+    for _,note in pairs(global.notes_by_invis) do
         destroy_note(note)
     end
-    global.notes = {}
+    for _,note in pairs(global.notes_by_target) do
+        destroy_note(note)
+    end
+end
+
+function interface.count()
+    local count = 0
+    for _,note in pairs(global.notes_by_invis) do
+        count = count+1
+    end
+    game.print("Notes by invis-notes: "..count)
+    count = 0
+    for _,note in pairs(global.notes_by_target) do
+        count = count+1
+    end
+    game.print("Notes by targets: "..count)
+end
+
+-- destroy any remaining notes without targets or invis-notes
+function interface.clean()
+    local count = 0
+    for _,note in pairs(global.notes_by_invis) do
+        if not note.invis_note.valid or not note.target.valid then
+            destroy_note(note)
+            count = count+1
+        end
+    end
+    for _,note in pairs(global.notes_by_target) do
+        if not note.invis_note.valid or not note.target.valid then
+            destroy_note(note)
+            count = count+1
+        end
+    end
+    game.print("Cleaned out "..count.." notes")
 end
 
 function interface.print_global()
@@ -868,6 +990,6 @@ function interface.print_global()
 	game.write_file("StickyNotes/Global.lua", serpent.block(global, {comment=false}))
 end
 
-remote.add_interface( "notes", interface )
+remote.add_interface( "StickyNotes", interface )
 
--- /c remote.call( "notes", "clean" )
+-- /c remote.call( "StickyNotes", "clean" )
