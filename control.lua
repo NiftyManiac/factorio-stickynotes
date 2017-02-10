@@ -660,7 +660,6 @@ script.on_event(defines.events.on_preplayer_mined_item, on_destruction )
 --------------------------------------------------------------------------------------
 local function on_marked_for_deconstruction( event )
     local ent = event.entity
-    local force = game.players[event.player_index].force
 
     if ent.name == "invis-note" then
         local note = get_note(ent)
@@ -668,7 +667,12 @@ local function on_marked_for_deconstruction( event )
         if not note.target.valid or note.target.name == "entity-ghost" then 
             destroy_note(note)
         else -- if target is still valid, just cancel deconstruction
-            ent.cancel_deconstruction(force)
+            if event.player_index ~= nil then
+                local force = game.players[event.player_index].force
+                ent.cancel_deconstruction(force)
+            else
+                ent.cancel_deconstruction(ent.force)
+            end
         end
     end
 end
