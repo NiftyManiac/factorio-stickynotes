@@ -614,12 +614,8 @@ local function on_creation( event )
         end
 
     elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
-		local note = global.notes_by_target[ent.unit_number]
 		ent.destructible = false
 		ent.operable = false
-		if not note then
-			add_note(ent)
-		end
     
     elseif ent.name ~= "entity-ghost" then -- when a normal item is placed figure out what ghosts are destroyed
         debug_print("Placed nonghost")
@@ -833,9 +829,9 @@ local function on_gui_click(event)
 
             if note.is_sign then
                 if note.locked_admin then
-                    note.entity.minable = false
+                    note.target.minable = false
                 else
-                    note.entity.minable = true
+                    note.target.minable = true
                 end
             end
         end
