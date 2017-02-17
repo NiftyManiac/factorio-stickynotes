@@ -624,13 +624,15 @@ local function on_creation( event )
             debug_print("No valid note target found")
             ent.destroy()
         end
-
-    elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
-		ent.destructible = false
-		ent.operable = false
-    
+		
     elseif ent.name ~= "entity-ghost" then -- when a normal item is placed figure out what ghosts are destroyed
         debug_print("Placed nonghost")
+		
+		if (ent.name == "sticky-note" or ent.name == "sticky-sign") then
+			ent.destructible = false
+			ent.operable = false
+		end
+		
         local x = ent.position.x
         local y = ent.position.y
         local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-10,y-10},{x+10, y+10}}}
