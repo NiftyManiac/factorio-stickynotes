@@ -587,7 +587,7 @@ local function on_creation( event )
 		local note_targets = ent.surface.find_entities_filtered{name = "entity-ghost", position = ent.position, force = ent.force, limit = 1}
 		if #note_targets > 0 then
 			local target = note_targets[1]
-			if target.valid or get_note(target) == nil then
+			if target.valid and get_note(target) == nil then
 				note_target = target
 			end
 		end
@@ -597,7 +597,7 @@ local function on_creation( event )
 			for _, target in pairs(note_targets) do
 				debug_print("target"..target.name)
 				if target.prototype.has_flag("player-creation") then
-					if target.valid or get_note(target) == nil then
+					if target.valid and get_note(target) == nil then
 						note_target = target
 					end
 					break
