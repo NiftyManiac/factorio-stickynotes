@@ -1,6 +1,6 @@
 ##VERSIONS:
 2.1.1	- Fixed error caused by non-players marking things for deconstruction
-2.1.0   - First 2.x release. Changed how notes are stored internally to fix various bugs
+2.1.0	- First 2.x release. Changed how notes are stored internally to fix various bugs
 2.0.1	- Various bugfixes and minor change to encoding
 2.0.0	- Development taken over by NiftyManiac, adding support for blueprints
 1.0.13	- add mapmark_default and text_default in config.lua
