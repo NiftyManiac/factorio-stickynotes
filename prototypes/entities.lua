@@ -67,7 +67,6 @@ local sticky_note_item = {
 
 local sticky_note = dupli_proto( "container", "wooden-chest", "sticky-note" )
 sticky_note.icon = "__StickyNotes__/graphics/sticky-note.png"
-sticky_note.max_health = 0
 sticky_note.picture =
 {
     filename = "__StickyNotes__/graphics/sticky-note.png",
@@ -111,7 +110,6 @@ local sticky_sign_item = {
 
 local sticky_sign = dupli_proto( "container", "wooden-chest", "sticky-sign" )
 sticky_sign.icon = "__StickyNotes__/graphics/sign-icon.png"
-sticky_sign.max_health = 0
 sticky_sign.picture =
 {
     filename = "__StickyNotes__/graphics/sign.png",
