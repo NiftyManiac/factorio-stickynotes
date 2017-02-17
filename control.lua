@@ -597,6 +597,7 @@ local function on_creation( event )
             debug_print("Decoding invis-note")
             local note = decode_note(ent, note_target)
             if note then
+                note.invis_note.teleport(note.target.position) -- align the note to avoid adding up error
                 register_note(note)
                 show_note(note)
                 display_mapmark(note, note.mapmark)
@@ -972,21 +973,31 @@ function interface.count()
 end
 
 -- destroy any remaining notes without targets or invis-notes
+-- also, make sure notes are aligned with their targets
 function interface.clean()
-    local count = 0
-    for _,note in pairs(global.notes_by_invis) do
+    local destroy_count = 0
+    local align_count = 0
+
+    local function fix_note(note)
         if not note.invis_note.valid or not note.target.valid then
             destroy_note(note)
-            count = count+1
+            destroy_count = destroy_count+1
+        elseif note.invis_note.position.x ~= note.target.position.x or 
+                note.invis_note.position.y ~= note.target.position.y then
+            note.invis_note.teleport(note.target.position)
+            hide_note(note)
+            show_note(note)
+            align_count = align_count+1;
         end
+    end
+    for _,note in pairs(global.notes_by_invis) do
+        fix_note(note)
     end
     for _,note in pairs(global.notes_by_target) do
-        if not note.invis_note.valid or not note.target.valid then
-            destroy_note(note)
-            count = count+1
-        end
+        fix_note(note)
     end
-    game.print("Cleaned out "..count.." notes")
+    game.print("Cleaned out "..destroy_count.." notes")
+    game.print("Aligned "..align_count.." notes")
 end
 
 function interface.print_global()
