@@ -579,21 +579,33 @@ local function on_creation( event )
     end
 
     if ent.name == "invis-note" then
+		-- only place an invis-note on a ghost, if that ghost doesn't already have a note
         local note_target
-        if global.instant_blueprints_enabled then
-            local note_targets = ent.surface.find_entities_filtered{position=ent.position}
-            for _,target in pairs(note_targets) do
-                debug_print("target"..target.name)
-                if target.name=="entity-ghost" or target.prototype.has_flag("player-creation") then
-                    note_target = target
-                    break
-                end
-            end
-        else
-            note_target = ent.surface.find_entities_filtered{name="entity-ghost",position=ent.position}[1]
-        end
-        -- only place an invis-note on a ghost, if that ghost doesn't already have a note
-        if note_target and get_note(note_target) == nil then
+		
+		-- With instant blueprint, the entity revive order is different between different entities. It is known that oil-refinery > invis-note > chest.
+		-- In case the target has not been revived yet, e.g. no instant blueprint, or chest with instant blueprint.
+		local note_targets = ent.surface.find_entities_filtered{name = "entity-ghost", position = ent.position, force = ent.force, limit = 1}
+		if #note_targets > 0 then
+			local target = note_targets[1]
+			if target.valid or get_note(target) == nil then
+				note_target = target
+			end
+		end
+		-- In case the target has already been revived, e.g. oil-refinery with instant blueprint.
+		if not note_target then
+			note_targets = ent.surface.find_entities_filtered{position = ent.position, force = ent.force}
+			for _, target in pairs(note_targets) do
+				debug_print("target"..target.name)
+				if target.prototype.has_flag("player-creation") then
+					if target.valid or get_note(target) == nil then
+						note_target = target
+					end
+					break
+				end
+			end
+		end
+		
+        if note_target then
             debug_print("Decoding invis-note")
             local note = decode_note(ent, note_target)
             if note then
