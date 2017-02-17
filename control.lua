@@ -367,29 +367,6 @@ local function add_note( entity )
 end
 
 --------------------------------------------------------------------------------------
-local function update_instant_blueprints_enabled()
-    if game.active_mods['instant-blueprints'] then
-        global.instant_blueprints_enabled = true
-    elseif game.active_mods['creative-mode'] then
-        global.instant_blueprints_enabled = remote.call("creative-mode","is_enabled")
-    else
-        global.instant_blueprints_enabled = false
-    end
-    debug_print("instant blueprints: ",global.instant_blueprints_enabled)
-end
-
-local function instant_blueprint_mods_changed()
-    debug_print("on mods changed")
-
-    if game.active_mods['creative-mode'] then
-        script.on_event(remote.call("creative-mode","on_enabled"), update_instant_blueprints_enabled)
-        script.on_event(remote.call("creative-mode","on_disabled"), update_instant_blueprints_enabled)
-    end
-
-    update_instant_blueprints_enabled()
-end
-
---------------------------------------------------------------------------------------
 local function init_globals()
     -- initialize or update general globals of the mod
     debug_print( "init_globals" )
@@ -400,7 +377,6 @@ local function init_globals()
     global.notes_by_invis = global.notes_by_invis or {}
     global.notes_by_target = global.notes_by_target or {}
     global.n_note = global.n_note or 0
-    global.instant_blueprints_enabled = global.instant_blueprints_enabled or false
 end
 
 --------------------------------------------------------------------------------------
@@ -437,14 +413,12 @@ local function on_init()
     debug_print( "on_init" )
     init_globals()
     init_players()
-    instant_blueprint_mods_changed()
 end
 
 script.on_init(on_init)
 
 --------------------------------------------------------------------------------------
 local function on_configuration_changed(data)
-    instant_blueprint_mods_changed()
 
     -- detect any mod or game version change
     debug_print("Config changed ")
