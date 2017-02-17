@@ -633,6 +633,24 @@ local function on_creation( event )
 			ent.operable = false
 		end
 		
+		-- Suggestion: uncomment this part and remove the original 20x20 search.
+		-- In case invis-note was revived before this entity, we need to bind invis-note with this entity again because its unit_number is changed.
+		--[[
+		local pos = ent.position
+		local x = pos.x
+		local y = pos.y
+		local invis_notes = ent.surface.find_entities_filtered{name = "invis-note", force = ent.force, area = {{x - 0.01, y - 0.01}, {x + 0.01, y + 0.01}}, limit = 1}
+		if #invis_notes > 0 then
+			local invis_note = invis_notes[1]
+			local note = get_note(invis_note)
+			if note then
+				update_note_target(note, ent)
+			else
+				destroy_note(note)
+			end
+		end
+		--]]
+		
         local x = ent.position.x
         local y = ent.position.y
         local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-10,y-10},{x+10, y+10}}}
