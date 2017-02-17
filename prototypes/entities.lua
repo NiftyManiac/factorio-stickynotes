@@ -144,7 +144,7 @@ local invis_note = {
     type = "constant-combinator",
     name = "invis-note",
     icon = "__StickyNotes__/graphics/sticky-note.png",
-    flags = {"player-creation", "placeable-off-grid"},
+    flags = {"player-creation", "placeable-off-grid", "not-repairable"},
     max_health = 0,
     collision_mask = {"not-colliding-with-itself"},
 
