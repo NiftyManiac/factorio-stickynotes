@@ -1,5 +1,11 @@
 ##VERSIONS:
-2.1.2	- Bugfixes related to sign blueprinting, construction robots, and creative-mode instant blueprints
+2.1.2	- Fixed signs producing duplicated notes. Signs no longer automatically add text
+		- Fixed mined signs producing long health bars
+		- Fixed construction robots attempting to repair invis-notes
+		- Fixed accumulation of floating-point error in note alignment after repeated blueprinting
+		- remote.call("StickyNotes","clean") now aligns misaligned notes as well as removing invalid ones
+		- Decided to start actually doing proper changelogs
+	
 2.1.1	- Fixed error caused by non-players marking things for deconstruction
 2.1.0	- First 2.x release. Changed how notes are stored internally to fix various bugs
 2.0.1	- Various bugfixes and minor change to encoding
