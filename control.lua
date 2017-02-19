@@ -367,29 +367,6 @@ local function add_note( entity )
 end
 
 --------------------------------------------------------------------------------------
-local function update_instant_blueprints_enabled()
-    if game.active_mods['instant-blueprints'] then
-        global.instant_blueprints_enabled = true
-    elseif game.active_mods['creative-mode'] then
-        global.instant_blueprints_enabled = remote.call("creative-mode","is_enabled")
-    else
-        global.instant_blueprints_enabled = false
-    end
-    debug_print("instant blueprints: ",global.instant_blueprints_enabled)
-end
-
-local function instant_blueprint_mods_changed()
-    debug_print("on mods changed")
-
-    if game.active_mods['creative-mode'] then
-        script.on_event(remote.call("creative-mode","on_enabled"), update_instant_blueprints_enabled)
-        script.on_event(remote.call("creative-mode","on_disabled"), update_instant_blueprints_enabled)
-    end
-
-    update_instant_blueprints_enabled()
-end
-
---------------------------------------------------------------------------------------
 local function init_globals()
     -- initialize or update general globals of the mod
     debug_print( "init_globals" )
@@ -400,7 +377,6 @@ local function init_globals()
     global.notes_by_invis = global.notes_by_invis or {}
     global.notes_by_target = global.notes_by_target or {}
     global.n_note = global.n_note or 0
-    global.instant_blueprints_enabled = global.instant_blueprints_enabled or false
 end
 
 --------------------------------------------------------------------------------------
@@ -437,14 +413,12 @@ local function on_init()
     debug_print( "on_init" )
     init_globals()
     init_players()
-    instant_blueprint_mods_changed()
 end
 
 script.on_init(on_init)
 
 --------------------------------------------------------------------------------------
 local function on_configuration_changed(data)
-    instant_blueprint_mods_changed()
 
     -- detect any mod or game version change
     debug_print("Config changed ")
@@ -579,21 +553,33 @@ local function on_creation( event )
     end
 
     if ent.name == "invis-note" then
+		-- only place an invis-note on a ghost, if that ghost doesn't already have a note
         local note_target
-        if global.instant_blueprints_enabled then
-            local note_targets = ent.surface.find_entities_filtered{position=ent.position}
-            for _,target in pairs(note_targets) do
-                debug_print("target"..target.name)
-                if target.name=="entity-ghost" or target.prototype.has_flag("player-creation") then
-                    note_target = target
-                    break
-                end
-            end
-        else
-            note_target = ent.surface.find_entities_filtered{name="entity-ghost",position=ent.position}[1]
-        end
-        -- only place an invis-note on a ghost, if that ghost doesn't already have a note
-        if note_target and get_note(note_target) == nil then
+		
+		-- With instant blueprint, the entity revive order is different between different entities. It is known that oil-refinery > invis-note > chest.
+		-- In case the target has not been revived yet, e.g. no instant blueprint, or chest with instant blueprint.
+		local note_targets = ent.surface.find_entities_filtered{name = "entity-ghost", position = ent.position, force = ent.force, limit = 1}
+		if #note_targets > 0 then
+			local target = note_targets[1]
+			if target.valid and get_note(target) == nil then
+				note_target = target
+			end
+		end
+		-- In case the target has already been revived, e.g. oil-refinery with instant blueprint.
+		if not note_target then
+			note_targets = ent.surface.find_entities_filtered{position = ent.position, force = ent.force}
+			for _, target in pairs(note_targets) do
+				debug_print("target"..target.name)
+				if target.prototype.has_flag("player-creation") then
+					if target.valid and get_note(target) == nil then
+						note_target = target
+					end
+					break
+				end
+			end
+		end
+		
+        if note_target then
             debug_print("Decoding invis-note")
             local note = decode_note(ent, note_target)
             if note then
@@ -612,13 +598,33 @@ local function on_creation( event )
             debug_print("No valid note target found")
             ent.destroy()
         end
-
-    elseif (ent.name == "sticky-note" or ent.name == "sticky-sign") then
-		ent.destructible = false
-		ent.operable = false
-    
+		
     elseif ent.name ~= "entity-ghost" then -- when a normal item is placed figure out what ghosts are destroyed
         debug_print("Placed nonghost")
+		
+		if (ent.name == "sticky-note" or ent.name == "sticky-sign") then
+			ent.destructible = false
+			ent.operable = false
+		end
+		
+		-- Suggestion: uncomment this part and remove the original 20x20 search.
+		-- In case invis-note was revived before this entity, we need to bind invis-note with this entity again because its unit_number is changed.
+		--[[
+		local pos = ent.position
+		local x = pos.x
+		local y = pos.y
+		local invis_notes = ent.surface.find_entities_filtered{name = "invis-note", force = ent.force, area = {{x - 0.01, y - 0.01}, {x + 0.01, y + 0.01}}, limit = 1}
+		if #invis_notes > 0 then
+			local invis_note = invis_notes[1]
+			local note = get_note(invis_note)
+			if note then
+				update_note_target(note, ent)
+			else
+				destroy_note(note)
+			end
+		end
+		--]]
+		
         local x = ent.position.x
         local y = ent.position.y
         local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-10,y-10},{x+10, y+10}}}
