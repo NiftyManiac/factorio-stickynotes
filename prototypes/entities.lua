@@ -282,6 +282,9 @@ mapmark.order = "y"
 mapmark.tile_width = 1
 mapmark.tile_height = 1
 
+mapmark.working_sound = nil
+mapmark.vehicle_impact_sound = nil
+
 mapmark.rail_overlay_animations =
 {
     north = mapmark_anim,
