@@ -652,12 +652,10 @@ local function on_marked_for_deconstruction( event )
         if not note.target.valid or note.target.name == "entity-ghost" then 
             destroy_note(note)
         else -- if target is still valid, just cancel deconstruction
-            if event.player_index ~= nil then
-                local force = game.players[event.player_index].force
-                ent.cancel_deconstruction(force)
-            else
-                ent.cancel_deconstruction(ent.force)
-            end
+            local force = (event.player_index and game.players[event.player_index].force) or
+                          (ent.last_user and ent.last_user.force) or
+                          ent.force
+            ent.cancel_deconstruction(force)
         end
     end
 end
