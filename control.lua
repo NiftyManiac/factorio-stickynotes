@@ -84,6 +84,7 @@ local function display_mapmark( note, on_or_off )
     if on_or_off and note.invis_note and note.invis_note.valid then
         local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
         if mapmark then
+            mapmark.destructible = false
             mapmark.operable = false
             mapmark.active = false
             mapmark.backer_name = note.text
@@ -102,6 +103,8 @@ local function create_invis_note( entity )
             direction = entity.direction,
             force = entity.force
         })
+    invis_note.destructible = false
+    invis_note.operable = false
     return invis_note
 end
 
@@ -553,6 +556,9 @@ local function on_creation( event )
     end
 
     if ent.name == "invis-note" then
+        ent.destructible = false;
+        ent.operable = false;
+
 		-- only place an invis-note on a ghost, if that ghost doesn't already have a note
         local note_target
 		
