@@ -993,6 +993,61 @@ function interface.print_global()
 	game.write_file("StickyNotes/Global.lua", serpent.block(global, {comment=false}))
 end
 
+function interface.add_note(entity,parameters)
+	add_note(entity)
+	interface.modify_note( entity, parameters)
+end
+
+function interface.remove_note(entity)
+	local note=get_note(entity)
+	if note then destroy_note(note) end
+end
+
+local isset = function(val) 
+	return val and true or val==false
+end
+local writable_fields={--[fieldname]=function(value,note), functions should perform check of the passed values and transformations as needed 
+        text = function(note,t)
+			note.text=t and tostring(t):sub(1, max_chars)
+		end, -- text
+        color = function(note,color_name) 
+			note.color=colors[color_name] or note.color
+		end, -- color
+        autoshow = function(note,bool)
+			note.autoshow = bool
+		end, -- if true, then note autoshows/hides
+        mapmark = function(note,bool)
+			display_mapmark(note,bool)
+        end, -- mark on the map
+        locked_force = function(note,bool)
+			note.locked_force = bool
+		end, -- only modifiable by the same force
+        locked_admin = function(note, bool)
+			if note.is_sign then 
+				if bool then
+					note.target.minable = false
+				else
+					note.target.minable = true
+				end
+			end
+        end, -- only modifiable by admins
+    }
+    
+function interface.modify_note(entity,par)
+	local note=get_note(entity)
+	if not note then return end
+    for k,v in pairs(writable_fields) do 
+		if isset(par[k]) then v(note,par[k]) end
+	end
+    
+    encode_note(note)
+	hide_note(note)
+	show_note(note)
+	if note.mapmark then
+		display_mapmark(note,true)
+	end
+end
+
 remote.add_interface( "StickyNotes", interface )
 
 -- /c remote.call( "StickyNotes", "clean" )
