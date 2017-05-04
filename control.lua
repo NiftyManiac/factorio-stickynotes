@@ -1,11 +1,10 @@
 --luacheck: globals debug_status debug_mod_name debug_file debug_print num color_array colors bool older_version
---luacheck: globals use_color_picker note_slot_count autohide_time text_color_default mapmark_default text_default
+local text_color_default = {r=1,g=1,b=0} -- default text color
 
 debug_status = 0 -- 0=silent, 1=log to file, 2=log to file and print
 debug_mod_name = "StickyNotes"
 debug_file = debug_mod_name .. "-debug.txt"
 require("utils")
-require("config")
 
 --local refrences for speeeeeeeed
 local bool = bool
@@ -14,7 +13,7 @@ local color_array = color_array
 local debug_print = debug_print
 local num = num
 
-local max_chars = 4*(note_slot_count-1)-1 -- max length of storable string
+local max_chars = 4*(settings.startup["sticky-note-slot-count"].value-1)-1 -- max length of storable string
 
 local color_picker_interface = "color-picker"
 local open_color_picker_button_name = "open_color_picker_stknt"
@@ -36,59 +35,93 @@ local function menu_note( player, player_mem, open_or_close )
         local note = player_mem.note_sel
 
         if note then
-            gui0 = player.gui.left.add({type = "flow", name = "flow_stknt", style = "achievements_flow_style", direction = "horizontal"})
-            gui1 = gui0.add({type = "frame", name = "frm_stknt", caption = {"stknt-gui-title", note.n}, style = "frame_stknt_style"})
-            gui1 = gui1.add({type = "flow", name = "flw_stknt", direction = "vertical", style = "flow_stknt_style"})
+            gui0 = player.gui.left.add{type = "flow", name = "flow_stknt", style = "achievements_flow_style", direction = "horizontal"}
+            gui1 = gui0.add{type = "frame", name = "frm_stknt", caption = {"stknt-gui-title", note.n}, style = "frame_stknt_style"}
+            gui1 = gui1.add{type = "flow", name = "flw_stknt", direction = "vertical", style = "flow_stknt_style"}
 
-            gui2 = gui1.add({type = "textfield", name = "txt_stknt", text = note.text, style = "textfield_stknt_style"})
+            gui2 = gui1.add{type = "textfield", name = "txt_stknt", text = note.text, style = "textfield_stknt_style"}
             gui2.style.minimal_width = 400
 
-            if use_color_picker and remote.interfaces[color_picker_interface] then
+            if settings.global["sticky-use-color-picker"].value and remote.interfaces[color_picker_interface] then
                 -- use Color Picker mod if possible.
-                gui1.add({type = "button", name = open_color_picker_button_name, caption = {"gui-train.color"}, style = "button_stknt_style"})
+                gui1.add{type = "button", name = open_color_picker_button_name, caption = {"gui-train.color"}, style = "button_stknt_style"}
             else
-                gui2 = gui1.add({type = "flow", name = "flw_stknt_colors", direction = "horizontal", style = "flow_stknt_style"})
+                gui2 = gui1.add{type = "flow", name = "flw_stknt_colors", direction = "horizontal", style = "flow_stknt_style"}
                 for name, color in pairs(colors) do
-                    gui3 = gui2.add({type = "button", name = "but_stknt_col_" .. name, caption = "@", style = "button_stknt_style"})
+                    gui3 = gui2.add{type = "button", name = "but_stknt_col_" .. name, caption = "@", style = "button_stknt_style"}
                     gui3.style.font_color = color
                 end
             end
 
-            gui1.add({type = "checkbox", name = "chk_stknt_autoshow", caption = {"stknt-gui-autoshow"}, state = note.autoshow,
-                    tooltip = {"stknt-gui-autoshow-tt"}, style = "checkbox_stknt_style"})
-            gui1.add({type = "checkbox", name = "chk_stknt_mapmark", caption = {"stknt-gui-mapmark"}, state = (note.mapmark ~= nil),
-                    tooltip = {"stknt-gui-mapmark-tt"}, style = "checkbox_stknt_style"})
-            gui1.add({type = "checkbox", name = "chk_stknt_locked_force", caption = {"stknt-gui-locked-force"}, state = note.locked_force,
-                    tooltip = {"stknt-gui-locked-force-tt"}, style = "checkbox_stknt_style"})
+            gui1.add{
+                type = "checkbox",
+                name = "chk_stknt_autoshow",
+                caption = {"stknt-gui-autoshow"},
+                state = note.autoshow,
+                tooltip = {"stknt-gui-autoshow-tt"},
+                style = "checkbox_stknt_style"
+            }
+            gui1.add{
+                type = "checkbox",
+                name = "chk_stknt_mapmark",
+                caption = {"stknt-gui-mapmark"},
+                state = (note.mapmark ~= nil),
+                tooltip = {"stknt-gui-mapmark-tt"},
+                style = "checkbox_stknt_style"
+            }
+            gui1.add{
+                type = "checkbox",
+                name = "chk_stknt_locked_force",
+                caption = {"stknt-gui-locked-force"},
+                state = note.locked_force,
+                tooltip = {"stknt-gui-locked-force-tt"},
+                style = "checkbox_stknt_style"}
             if player.admin then
-                gui1.add({type = "checkbox", name = "chk_stknt_locked_admin", caption = {"stknt-gui-locked-admin"}, state = note.locked_admin,
-                        tooltip = {"stknt-gui-locked-admin-tt"}, style = "checkbox_stknt_style"})
+                gui1.add{
+                    type = "checkbox",
+                    name = "chk_stknt_locked_admin",
+                    caption = {"stknt-gui-locked-admin"},
+                    state = note.locked_admin,
+                    tooltip = {"stknt-gui-locked-admin-tt"},
+                    style = "checkbox_stknt_style"
+                }
             end
 
-            gui1.add({type = "button", name = "but_stknt_delete", caption = {"stknt-gui-delete"},
-                    tooltip = {"stknt-gui-delete-tt"}, style = "button_stknt_style"})
-            gui1.add({type = "button", name = "but_stknt_close", caption = {"stknt-gui-close"},
-                    tooltip = {"stknt-gui-close-tt"}, style = "button_stknt_style"})
+            gui1.add{
+                type = "button",
+                name = "but_stknt_delete",
+                caption = {"stknt-gui-delete"},
+                tooltip = {"stknt-gui-delete-tt"},
+                style = "button_stknt_style"
+            }
+            gui1.add{
+                type = "button",
+                name = "but_stknt_close",
+                caption = {"stknt-gui-close"},
+                tooltip = {"stknt-gui-close-tt"},
+                style = "button_stknt_style"}
         end
     end
 end
 
 --------------------------------------------------------------------------------------
 local function display_mapmark( note, on_or_off )
-    if note.mapmark and note.mapmark.valid then
-        note.mapmark.destroy()
-    end
+    if note then
+        if note.mapmark and note.mapmark.valid then
+            note.mapmark.destroy()
+        end
 
-    note.mapmark = nil
+        note.mapmark = nil
 
-    if on_or_off and note.invis_note and note.invis_note.valid then
-        local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
-        if mapmark then
-            mapmark.destructible = false
-            mapmark.operable = false
-            mapmark.active = false
-            mapmark.backer_name = note.text
-            note.mapmark = mapmark
+        if on_or_off and note.invis_note and note.invis_note.valid then
+            local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
+            if mapmark then
+                mapmark.destructible = false
+                mapmark.operable = false
+                mapmark.active = false
+                mapmark.backer_name = note.text
+                note.mapmark = mapmark
+            end
         end
     end
 end
@@ -146,7 +179,7 @@ local function encode_note( note )
 
         -- array of encoded values to store in the invis-note
         local signal_vals = {}
-        for i = 1, note_slot_count do
+        for i = 1, settings.startup["sticky-note-slot-count"].value do
             signal_vals[i] = -2 ^ 31
         end
 
@@ -166,8 +199,8 @@ local function encode_note( note )
         end
         debug_print("Text1: ",signal_vals[2])
         debug_print("Text2: ",signal_vals[3])
-        if #signal_vals > note_slot_count then
-            debug_print("String length must not exceed "..(4*(note_slot_count-1))..". Increase note_slot_count in config.lua if needed.")
+        if #signal_vals > settings.startup["sticky-note-slot-count"].value then
+            debug_print("String length must not exceed "..(4*(settings.startup["sticky-note-slot-count"].value-1))..". Increase note slot count in mod settings.")
             return
         end
 
@@ -194,8 +227,8 @@ end
 -- decode an invis_note and return a note object. Also, create a mapmark if needed.
 -- returns nil if decode failed
 -- encoding versions changes:
---  2.0.0: 0
---  2.0.1: 1
+-- 2.0.0: 0
+-- 2.0.1: 1
 local function decode_note( invis_note, target )
     local note = {}
     note.invis_note = invis_note
@@ -218,14 +251,14 @@ local function decode_note( invis_note, target )
         note.locked_force = bool(bit32.extract(metadata, 10))
         note.locked_admin = bool(bit32.extract(metadata, 11))
 
-        local color_i = bit32.extract(metadata, 0, 8) 
+        local color_i = bit32.extract(metadata, 0, 8)
         note.color = color_array[color_i]
         if note.color == nil then
             debug_print("Failed to decode color")
         end
 
         note.text = ""
-        for i = 1, (note_slot_count-1)*4 do
+        for i = 1, (settings.startup["sticky-note-slot-count"].value-1)*4 do
             local signal_i = math.floor((i-1)/4)
             local shift = (i-1)%4 * 8
 
@@ -250,42 +283,45 @@ end
 
 --------------------------------------------------------------------------------------
 local function show_note( note )
-    if note.fly then return end
+    if note then
+        if note.fly and note.fly.valid then
+            note.fly.active = note.autoshow or false
+            return
+        end
 
-    if note.invis_note and note.invis_note.valid then
-        local pos = note.invis_note.position
-        local surf = note.invis_note.surface
-        --local force = note.invis_note.force
-        local x = pos.x-1
-        local y = pos.y
+        if note.invis_note and note.invis_note.valid then
+            local pos = note.invis_note.position
+            local surf = note.invis_note.surface
+            local x = pos.x-1
+            local y = pos.y
 
-        local fly = surf.create_entity({name="sticky-text",text=note.text,color=note.color,position={x=x,y=y}})
-        if fly then
-            note.fly = fly
-            note.fly.active = false
-            note.autohide_tick = game.tick + autohide_time
+            local fly = surf.create_entity({name="sticky-text",text=note.text,color=note.color,position={x=x,y=y}})
+            if fly then
+                note.fly = fly
+                note.fly.active = note.autoshow or false
+            end
         end
     end
 end
 
 --------------------------------------------------------------------------------------
 local function hide_note( note )
-    if note.fly and note.fly.valid then
-        note.fly.destroy()
+    if note then
+        if note.fly and note.fly.valid then
+            note.fly.destroy()
+        end
+        note.fly = nil
     end
-    note.fly = nil
 end
 
 --------------------------------------------------------------------------------------
 local function destroy_note( note )
-    for i, player in pairs(game.players) do
-        if player.connected then
-            local player_mem = global.player_mem[i]
+    for _, player in pairs(game.connected_players) do
+        local player_mem = global.player_mem[player.index]
 
-            if player_mem.note_sel == note then
-                menu_note(player,player_mem,false)
-                player_mem.note_sel = nil
-            end
+        if player_mem.note_sel == note then
+            menu_note(player,player_mem,false)
+            player_mem.note_sel = nil
         end
     end
 
@@ -312,6 +348,14 @@ local function get_note( ent )
     end
     return global.notes_by_target[ent.unit_number]
 end
+
+local function on_selected_entity_changed(event)
+    local player = game.players[event.player_index]
+    if player.selected then
+        return show_note(get_note(player.selected))
+    end
+end
+script.on_event(defines.events.on_selected_entity_changed, on_selected_entity_changed)
 
 --------------------------------------------------------------------------------------
 local function register_note( note )
@@ -341,8 +385,7 @@ local function add_note( entity )
         color = text_color_default, -- color
         n = nil, -- number of the note
         fly = nil, -- text entity
-        autoshow = false, -- if true, then note autoshows/hides
-        autohide_tick = game.tick + autohide_time, -- tick when to autohide
+        autoshow = settings.global["sticky-default-autoshow"].value, -- if true, then note autoshows/hides
         mapmark = nil, -- mark on the map
         locked_force = true, -- only modifiable by the same force
         locked_admin = false, -- only modifiable by admins
@@ -353,20 +396,27 @@ local function add_note( entity )
         target_unit_number = entity.unit_number -- needed in case target becomes invalid
     }
 
-    if text_default ~= nil then
-        note.text = text_default
-    end
+    note.text = #settings.global["sticky-default-message"].value > 1 and settings.global["sticky-default-message"].value or note.text
     show_note(note)
-
     register_note(note)
-
-    if mapmark_default == true then
-        display_mapmark(note,true)
-    end
-
+    display_mapmark(note, settings.global["sticky-default-mapmark"].value)
     encode_note(note)
 
     return(note)
+end
+
+local function entity_moved(event)
+    local ent = event.moved_entity and event.moved_entity.valid and event.moved_entity
+    if ent then
+        local note = get_note(ent)
+        if note then
+            note.invis_note.teleport(ent.position)
+            if note.fly then
+                hide_note(note)
+                show_note(note)
+            end
+        end
+    end
 end
 
 --------------------------------------------------------------------------------------
@@ -416,9 +466,18 @@ local function on_init()
     debug_print( "on_init" )
     init_globals()
     init_players()
+    if remote.interfaces["picker"] and remote.interfaces["picker"]["dolly_moved_entity_id"] then
+        script.on_event(remote.call("picker", "dolly_moved_entity_id"), entity_moved)
+    end
 end
-
 script.on_init(on_init)
+
+local function on_load()
+    if remote.interfaces["picker"] and remote.interfaces["picker"]["dolly_moved_entity_id"] then
+        script.on_event(remote.call("picker", "dolly_moved_entity_id"), entity_moved)
+    end
+end
+script.on_load(on_load)
 
 --------------------------------------------------------------------------------------
 local function on_configuration_changed(data)
@@ -436,12 +495,10 @@ local function on_configuration_changed(data)
 
             -- close all notes menu, by precaution
 
-            for i, player in pairs(game.players) do
-                if player.connected then
-                    local player_mem = global.player_mem[i]
+            for _, player in pairs(game.connected_players) do
+                    local player_mem = global.player_mem[player.index]
                     menu_note(player,player_mem,false)
                     player_mem.note_sel = nil
-                end
             end
 
             if changes.old_version and older_version(changes.old_version, "1.0.8") then
@@ -451,7 +508,7 @@ local function on_configuration_changed(data)
 
             if changes.old_version and older_version(changes.old_version, "1.0.12") then
                 for _,note in pairs(global.notes) do
-					--Not perfect, TODO expand logic to clean when entity is invalid
+                    --Not perfect, TODO expand logic to clean when entity is invalid
                     local ent_name = note.entity and note.entity.valid and note.entity.name or ""
                     note.locked_force = note.locked
                     note.locked_admin = false
@@ -484,7 +541,7 @@ local function on_configuration_changed(data)
                 global.notes = nil
                 game.print( "Sticky Notes: notes will now persist through blueprints, and can be shared with blueprint strings.")
 
-            elseif changes.old_version and older_version(changes.old_version, "2.1.0") then --elseif is not a typo, there's two separate migrations here  
+            elseif changes.old_version and older_version(changes.old_version, "2.1.0") then --elseif is not a typo, there's two separate migrations here
                 -- replace global.notes with global.notes_by_invis and global.notes_by_target
                 for _,note in pairs(global.notes) do
                     local invis_note = note.invis_note
@@ -526,17 +583,6 @@ end
 script.on_event(defines.events.on_player_created, on_player_created )
 
 --------------------------------------------------------------------------------------
-local function on_player_joined_game(event)
-    -- called in SP(once) and MP(at every connect), eventually after on_player_created
-    local player = game.players[event.player_index]
-    debug_print( "player joined ", player.name )
-
-    init_player(player)
-end
-
-script.on_event(defines.events.on_player_joined_game, on_player_joined_game )
-
---------------------------------------------------------------------------------------
 -- !!fix sign behaviors
 local function on_creation( event )
     local ent = event.created_entity
@@ -559,32 +605,32 @@ local function on_creation( event )
         ent.destructible = false;
         ent.operable = false;
 
-		-- only place an invis-note on a ghost, if that ghost doesn't already have a note
+        -- only place an invis-note on a ghost, if that ghost doesn't already have a note
         local note_target
-		
-		-- With instant blueprint, the entity revive order is different between different entities. It is known that oil-refinery > invis-note > chest.
-		-- In case the target has not been revived yet, e.g. no instant blueprint, or chest with instant blueprint.
-		local note_targets = ent.surface.find_entities_filtered{name = "entity-ghost", position = ent.position, force = ent.force, limit = 1}
-		if #note_targets > 0 then
-			local target = note_targets[1]
-			if target.valid and get_note(target) == nil then
-				note_target = target
-			end
-		end
-		-- In case the target has already been revived, e.g. oil-refinery with instant blueprint.
-		if not note_target then
-			note_targets = ent.surface.find_entities_filtered{position = ent.position, force = ent.force}
-			for _, target in pairs(note_targets) do
-				debug_print("target"..target.name)
-				if target.prototype.has_flag("player-creation") then
-					if target.valid and get_note(target) == nil then
-						note_target = target
-					end
-					break
-				end
-			end
-		end
-		
+
+        -- With instant blueprint, the entity revive order is different between different entities. It is known that oil-refinery > invis-note > chest.
+        -- In case the target has not been revived yet, e.g. no instant blueprint, or chest with instant blueprint.
+        local note_targets = ent.surface.find_entities_filtered{name = "entity-ghost", position = ent.position, force = ent.force, limit = 1}
+        if #note_targets > 0 then
+            local target = note_targets[1]
+            if target.valid and get_note(target) == nil then
+                note_target = target
+            end
+        end
+        -- In case the target has already been revived, e.g. oil-refinery with instant blueprint.
+        if not note_target then
+            note_targets = ent.surface.find_entities_filtered{position = ent.position, force = ent.force}
+            for _, target in pairs(note_targets) do
+                debug_print("target"..target.name)
+                if target.prototype.has_flag("player-creation") then
+                    if target.valid and get_note(target) == nil then
+                        note_target = target
+                    end
+                    break
+                end
+            end
+        end
+
         if note_target then
             debug_print("Decoding invis-note")
             local note = decode_note(ent, note_target)
@@ -604,15 +650,15 @@ local function on_creation( event )
             debug_print("No valid note target found")
             ent.destroy()
         end
-		
+
     elseif ent.name ~= "entity-ghost" then -- when a normal item is placed figure out what ghosts are destroyed
         debug_print("Placed nonghost")
-		
-		if (ent.name == "sticky-note" or ent.name == "sticky-sign") then
-			ent.destructible = false
-			ent.operable = false
-		end
-		
+
+        if (ent.name == "sticky-note" or ent.name == "sticky-sign") then
+            ent.destructible = false
+            ent.operable = false
+        end
+
         local x = ent.position.x
         local y = ent.position.y
         local invis_notes = ent.surface.find_entities_filtered{name="invis-note",area={{x-10,y-10},{x+10, y+10}}}
@@ -655,54 +701,18 @@ local function on_marked_for_deconstruction( event )
     if ent.name == "invis-note" then
         local note = get_note(ent)
         debug_print("Marked for decon")
-        if not note.target.valid or note.target.name == "entity-ghost" then 
+        if not note.target.valid or note.target.name == "entity-ghost" then
             destroy_note(note)
         else -- if target is still valid, just cancel deconstruction
             local force = (event.player_index and game.players[event.player_index].force) or
-                          (ent.last_user and ent.last_user.force) or
-                          ent.force
+            (ent.last_user and ent.last_user.force) or
+            ent.force
             ent.cancel_deconstruction(force)
         end
     end
 end
 
 script.on_event(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-
---------------------------------------------------------------------------------------
-local function on_tick()
-    if global.tick <= 0 then
-        -- auto show notes
-        global.tick = 28
-
-        for _, player in pairs(game.connected_players) do
-            local selected = player.selected
-
-            if selected then
-                local note = get_note(selected)
-                if note and note.autoshow then
-                    show_note(note)
-                end
-            end
-        end
-
-    elseif global.tick == 13 then
-        -- cleaning and auto hiding notes
-
-        for _,note in pairs(global.notes_by_invis) do
-            if note.invis_note and note.invis_note.valid then
-                if note.autoshow and note.fly and note.editer == nil and game.tick > note.autohide_tick then
-                    hide_note(note)
-                end
-            else
-                destroy_note(note)
-            end
-        end
-    end
-
-    global.tick = global.tick -1
-end
-
-script.on_event(defines.events.on_tick, on_tick)
 
 --------------------------------------------------------------------------------------
 local function on_gui_text_changed(event)
@@ -727,7 +737,7 @@ local function on_gui_text_changed(event)
             hide_note(note)
             show_note(note)
             if note.mapmark then
-                display_mapmark(note,true)
+                display_mapmark(note, true)
             end
         end
     end
@@ -949,12 +959,12 @@ end
 
 function interface.count()
     local count = 0
-    for _,note in pairs(global.notes_by_invis) do
+    for _ in pairs(global.notes_by_invis) do
         count = count+1
     end
     game.print("Notes by invis-notes: "..count)
     count = 0
-    for _,note in pairs(global.notes_by_target) do
+    for _ in pairs(global.notes_by_target) do
         count = count+1
     end
     game.print("Notes by targets: "..count)
@@ -970,82 +980,89 @@ function interface.clean()
         if not note.invis_note.valid or not note.target.valid then
             destroy_note(note)
             destroy_count = destroy_count+1
-        elseif note.invis_note.position.x ~= note.target.position.x or 
-                note.invis_note.position.y ~= note.target.position.y then
+        elseif note.invis_note.position.x ~= note.target.position.x or note.invis_note.position.y ~= note.target.position.y then
             note.invis_note.teleport(note.target.position)
             hide_note(note)
             show_note(note)
             align_count = align_count+1;
         end
     end
+
     for _,note in pairs(global.notes_by_invis) do
         fix_note(note)
     end
+
     for _,note in pairs(global.notes_by_target) do
         fix_note(note)
     end
+
     game.print("Cleaned out "..destroy_count.." notes")
     game.print("Aligned "..align_count.." notes")
 end
 
 function interface.print_global()
-	game.print(serpent.block(global, {comment=false}))
-	game.write_file("StickyNotes/Global.lua", serpent.block(global, {comment=false}))
+    --game.print(serpent.block(global, {comment=false}))
+    game.write_file("StickyNotes/Global.lua", serpent.block(global, {nocode=true, sparse=true, comment=false}))
 end
 
 function interface.add_note(entity,parameters)
-	add_note(entity)
-	interface.modify_note( entity, parameters)
+    add_note(entity)
+    interface.modify_note( entity, parameters)
 end
 
 function interface.remove_note(entity)
-	local note=get_note(entity)
-	if note then destroy_note(note) end
+    local note = get_note(entity)
+    if note then destroy_note(note) end
 end
 
-local isset = function(val) 
-	return val and true or val==false
+local isset = function(val)
+    return val and true or val==false
 end
-local writable_fields={--[fieldname]=function(value,note), functions should perform check of the passed values and transformations as needed 
-        text = function(note,t)
-			note.text=t and tostring(t):sub(1, max_chars)
-		end, -- text
-        color = function(note,color_name) 
-			note.color=colors[color_name] or note.color
-		end, -- color
-        autoshow = function(note,bool)
-			note.autoshow = bool
-		end, -- if true, then note autoshows/hides
-        mapmark = function(note,bool)
-			display_mapmark(note,bool)
-        end, -- mark on the map
-        locked_force = function(note,bool)
-			note.locked_force = bool
-		end, -- only modifiable by the same force
-        locked_admin = function(note, bool)
-			if note.is_sign then 
-				if bool then
-					note.target.minable = false
-				else
-					note.target.minable = true
-				end
-			end
-        end, -- only modifiable by admins
-    }
-    
+local writable_fields={--[fieldname]=function(value,note), functions should perform check of the passed values and transformations as needed
+    text = function(note,t)
+        note.text=t and tostring(t):sub(1, max_chars)
+    end, -- text
+
+    color = function(note,color_name)
+        note.color=colors[color_name] or note.color
+    end, -- color
+
+    autoshow = function(note, boolean)
+        note.autoshow = boolean
+    end, -- if true, then note autoshows/hides
+
+    mapmark = function(note, boolean)
+        display_mapmark(note,boolean)
+    end, -- mark on the map
+
+    locked_force = function(note, boolean)
+        note.locked_force = boolean
+    end, -- only modifiable by the same force
+
+    locked_admin = function(note, boolean)
+        if note.is_sign then
+            if boolean then
+                note.target.minable = false
+            else
+                note.target.minable = true
+            end
+        end
+    end, -- only modifiable by admins
+}
+
 function interface.modify_note(entity,par)
-	local note=get_note(entity)
-	if not note then return end
-    for k,v in pairs(writable_fields) do 
-		if isset(par[k]) then v(note,par[k]) end
-	end
-    
+    local note=get_note(entity)
+    if not note then return end
+    for k,v in pairs(writable_fields) do
+        if isset(par[k]) then v(note,par[k]) end
+    end
+
     encode_note(note)
-	hide_note(note)
-	show_note(note)
-	if note.mapmark then
-		display_mapmark(note,true)
-	end
+    hide_note(note)
+    show_note(note)
+    if note.mapmark then
+        display_mapmark(note,true)
+    end
 end
 
 remote.add_interface( "StickyNotes", interface )

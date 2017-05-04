@@ -1,13 +1,13 @@
 --luacheck: ignore dupli_proto note_slot_count
 
 local empty_picture = {
-	filename = "__StickyNotes__/graphics/empty.png",
-	x = 0,
-	y = 0,
-	width = 1,
-	height = 1,
-	frame_count = 1,
-	shift = {0, 0},
+    filename = "__StickyNotes__/graphics/empty.png",
+    x = 0,
+    y = 0,
+    width = 1,
+    height = 1,
+    frame_count = 1,
+    shift = {0, 0},
 }
 
 --------------------------------------------------------------------------------------
@@ -145,8 +145,7 @@ local invis_note = {
     flags = {"player-creation", "placeable-off-grid", "not-repairable"},
     max_health = 1,
     collision_mask = {"not-colliding-with-itself"},
-
-    item_slot_count = note_slot_count,
+    item_slot_count = settings.startup["sticky-note-slot-count"].value,
     sprites =
     {
         north = empty_picture,
@@ -154,161 +153,87 @@ local invis_note = {
         south = empty_picture,
         west = empty_picture,
     },
-
     activity_led_sprites =
     {
-        north =
-        {
-            filename = "__base__/graphics/entity/combinator/activity-leds/combinator-led-constant-north.png",
-            width = 11,
-            height = 10,
-            frame_count = 1,
-            shift = {0.296875, -0.40625},
-        },
-        east =
-        {
-            filename = "__base__/graphics/entity/combinator/activity-leds/combinator-led-constant-east.png",
-            width = 14,
-            height = 12,
-            frame_count = 1,
-            shift = {0.25, -0.03125},
-        },
-        south =
-        {
-            filename = "__base__/graphics/entity/combinator/activity-leds/combinator-led-constant-south.png",
-            width = 11,
-            height = 11,
-            frame_count = 1,
-            shift = {-0.296875, -0.078125},
-        },
-        west =
-        {
-            filename = "__base__/graphics/entity/combinator/activity-leds/combinator-led-constant-west.png",
-            width = 12,
-            height = 12,
-            frame_count = 1,
-            shift = {-0.21875, -0.46875},
-        }
+        north = empty_picture,
+        east = empty_picture,
+        south = empty_picture,
+        west = empty_picture
     },
-
-    activity_led_light =
-    {
-        intensity = 0.8,
-        size = 1,
-    },
-
-    activity_led_light_offsets =
-    {
-        {0.296875, -0.40625},
-        {0.25, -0.03125},
-        {-0.296875, -0.078125},
-        {-0.21875, -0.46875}
-    },
-    circuit_wire_max_distance = 7.5,
+    activity_led_light_offsets = {{0, 0}, {0, 0}, {0, 0}, {0, 0}},
+    circuit_wire_max_distance = 0,
     circuit_wire_connection_points =
     {
         {
-            shadow =
-            {
-                red = {0.15625, -0.28125},
-                green = {0.65625, -0.25}
-            },
-            wire =
-            {
-                red = {-0.28125, -0.5625},
-                green = {0.21875, -0.5625},
-            }
+            shadow = {red = {0, 0}, green = {0, 0}},
+            wire = {red = {0, 0}, green = {0, 0}}
         },
         {
-            shadow =
-            {
-                red = {0.75, -0.15625},
-                green = {0.75, 0.25},
-            },
-            wire =
-            {
-                red = {0.46875, -0.5},
-                green = {0.46875, -0.09375},
-            }
+            shadow = {red = {0, 0}, green = {0, 0}},
+            wire = {red = {0, 0}, green = {0, 0}}
         },
         {
-            shadow =
-            {
-                red = {0.75, 0.5625},
-                green = {0.21875, 0.5625}
-            },
-            wire =
-            {
-                red = {0.28125, 0.15625},
-                green = {-0.21875, 0.15625}
-            }
+            shadow = {red = {0, 0}, green = {0, 0}},
+            wire = {red = {0, 0}, green = {0, 0}}
         },
         {
-            shadow =
-            {
-                red = {-0.03125, 0.28125},
-                green = {-0.03125, -0.125},
-            },
-            wire =
-            {
-                red = {-0.46875, 0},
-                green = {-0.46875, -0.40625},
-            }
-        }
-    },
+            shadow = {red = {0, 0}, green = {0, 0}},
+            wire = {red = {0, 0}, green = {0, 0}}
+        },
+    }
 }
 
--- to put a label on the map.
-local mapmark_anim =
-{
-    filename = "__StickyNotes__/graphics/empty.png",
-    priority = "high",
-    width = 0,
-    height = 0,
-    frame_count = 1,
-    shift = {0,0},
-}
+    -- to put a label on the map.
+    local mapmark_anim =
+    {
+        filename = "__StickyNotes__/graphics/empty.png",
+        priority = "high",
+        width = 0,
+        height = 0,
+        frame_count = 1,
+        shift = {0,0},
+    }
 
-local mapmark = dupli_proto("train-stop","train-stop","sticky-note-mapmark")
-mapmark.icon = "__StickyNotes__/graphics/sign-icon.png"
-mapmark.minable.result = "train-stop"
+    local mapmark = dupli_proto("train-stop","train-stop","sticky-note-mapmark")
+    mapmark.icon = "__StickyNotes__/graphics/sign-icon.png"
+    mapmark.minable = nil
+    mapmark.flags = {}
+    mapmark.collision_box = nil
+    mapmark.selection_box = nil
+    mapmark.drawing_box = nil
+    mapmark.collision_mask = {"not-colliding-with-itself"}
 
-mapmark.collision_box = {{0,0}, {0,0}}
-mapmark.selection_box = {{0,0}, {0,0}}
-mapmark.drawing_box = {{0,0}, {0,0}}
-mapmark.collision_mask = {"not-colliding-with-itself"}
-mapmark.order = "y"
+    mapmark.tile_width = 1
+    mapmark.tile_height = 1
 
-mapmark.tile_width = 1
-mapmark.tile_height = 1
+    mapmark.working_sound = nil
+    mapmark.vehicle_impact_sound = nil
 
-mapmark.working_sound = nil
-mapmark.vehicle_impact_sound = nil
+    mapmark.rail_overlay_animations =
+    {
+        north = mapmark_anim,
+        east = mapmark_anim,
+        south = mapmark_anim,
+        west = mapmark_anim,
+    }
+    mapmark.animations =
+    {
+        north = mapmark_anim,
+        east = mapmark_anim,
+        south = mapmark_anim,
+        west = mapmark_anim,
+    }
+    mapmark.top_animations =
+    {
+        north = mapmark_anim,
+        east = mapmark_anim,
+        south = mapmark_anim,
+        west = mapmark_anim,
+    }
 
-mapmark.rail_overlay_animations =
-{
-    north = mapmark_anim,
-    east = mapmark_anim,
-    south = mapmark_anim,
-    west = mapmark_anim,
-}
-mapmark.animations =
-{
-    north = mapmark_anim,
-    east = mapmark_anim,
-    south = mapmark_anim,
-    west = mapmark_anim,
-}
-mapmark.top_animations =
-{
-    north = mapmark_anim,
-    east = mapmark_anim,
-    south = mapmark_anim,
-    west = mapmark_anim,
-}
+    local sticky_text = dupli_proto("flying-text", "flying-text", "sticky-text")
+    sticky_text.icon = "__StickyNotes__/graphics/sign-icon.png"
+    sticky_text.speed = 0
+    sticky_text.time_to_live = 300
 
-
-local sticky_text = dupli_proto("flying-text", "flying-text", "sticky-text")
-sticky_text.icon = "__StickyNotes__/graphics/sign-icon.png"
-
-data:extend({invis_note_item, invis_note, sticky_text, mapmark})
+    data:extend{invis_note_item, invis_note, sticky_text, mapmark}

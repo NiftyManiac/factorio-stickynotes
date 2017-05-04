@@ -1,4 +1,3 @@
-require("config")
 require("utils")
 require("prototypes/styles")
 require("prototypes/hotkey")
