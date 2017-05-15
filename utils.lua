@@ -1,4 +1,5 @@
 -- utils.lua by binbinhfr, v1.0.16
+--luacheck: ignore
 
 -- define debug_status to 1 or nil in the control.lua, before statement require("utils")
 -- define also debug_file and debug_mod_name
@@ -171,7 +172,7 @@ function debug_active(...)
 
 	s = debug_mod_name .. "(" .. game.tick .. "): " .. s
 	game.write_file( debug_file, s .. "\n", true )
-	
+
 	if debug_status > 1 then
 		for _, player in pairs(game.players) do
 			if player.connected then player.print(s) end
