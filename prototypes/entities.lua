@@ -1,5 +1,4 @@
---luacheck: ignore dupli_proto note_slot_count
-
+--luacheck: ignore dupli_proto
 local empty_picture = {
     filename = "__StickyNotes__/graphics/empty.png",
     x = 0,
@@ -78,7 +77,7 @@ sticky_note.picture =
 --sticky_note.collision_mask = "floor-layer"
 sticky_note.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
 sticky_note.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
-sticky_note.inventory_size = 1
+sticky_note.inventory_size = 0
 
 data:extend({sticky_note_recipe, sticky_note_item, sticky_note})
 
@@ -121,7 +120,7 @@ sticky_sign.picture =
 sticky_sign.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
 sticky_sign.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 -- sticky_sign.collision_mask = "floor-layer"
-sticky_sign.inventory_size = 1
+sticky_sign.inventory_size = 0
 
 data:extend({sticky_sign_recipe, sticky_sign_item, sticky_sign})
 
@@ -142,7 +141,7 @@ local invis_note = {
     type = "constant-combinator",
     name = "invis-note",
     icon = "__StickyNotes__/graphics/sticky-note.png",
-    flags = {"player-creation", "placeable-off-grid", "not-repairable"},
+    flags = {"player-creation", "placeable-off-grid", "not-repairable", "not-on-map"},
     max_health = 1,
     collision_mask = {"not-colliding-with-itself"},
     item_slot_count = settings.startup["sticky-note-slot-count"].value,
@@ -183,57 +182,9 @@ local invis_note = {
     }
 }
 
-    -- to put a label on the map.
-    local mapmark_anim =
-    {
-        filename = "__StickyNotes__/graphics/empty.png",
-        priority = "high",
-        width = 0,
-        height = 0,
-        frame_count = 1,
-        shift = {0,0},
-    }
-
-    local mapmark = dupli_proto("train-stop","train-stop","sticky-note-mapmark")
-    mapmark.icon = "__StickyNotes__/graphics/sign-icon.png"
-    mapmark.minable = nil
-    mapmark.flags = {}
-    mapmark.collision_box = nil
-    mapmark.selection_box = nil
-    mapmark.drawing_box = nil
-    mapmark.collision_mask = {"not-colliding-with-itself"}
-
-    mapmark.tile_width = 1
-    mapmark.tile_height = 1
-
-    mapmark.working_sound = nil
-    mapmark.vehicle_impact_sound = nil
-
-    mapmark.rail_overlay_animations =
-    {
-        north = mapmark_anim,
-        east = mapmark_anim,
-        south = mapmark_anim,
-        west = mapmark_anim,
-    }
-    mapmark.animations =
-    {
-        north = mapmark_anim,
-        east = mapmark_anim,
-        south = mapmark_anim,
-        west = mapmark_anim,
-    }
-    mapmark.top_animations =
-    {
-        north = mapmark_anim,
-        east = mapmark_anim,
-        south = mapmark_anim,
-        west = mapmark_anim,
-    }
-
     local sticky_text = dupli_proto("flying-text", "flying-text", "sticky-text")
     sticky_text.icon = "__StickyNotes__/graphics/sign-icon.png"
     sticky_text.speed = 0
     sticky_text.time_to_live = 300
 
-    data:extend{invis_note_item, invis_note, sticky_text, mapmark}
+    data:extend{invis_note_item, invis_note, sticky_text}

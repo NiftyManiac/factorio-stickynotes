@@ -110,18 +110,18 @@ local function display_mapmark( note, on_or_off )
         if note.mapmark and note.mapmark.valid then
             note.mapmark.destroy()
         end
-
         note.mapmark = nil
 
         if on_or_off and note.invis_note and note.invis_note.valid then
-            local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
-            if mapmark then
-                mapmark.destructible = false
-                mapmark.operable = false
-                mapmark.active = false
-                mapmark.backer_name = note.text
-                note.mapmark = mapmark
-            end
+            --local mapmark = note.invis_note.surface.create_entity({name = "sticky-note-mapmark", force = game.forces.neutral, position = note.invis_note.position})
+            local tag = {
+                icon = {type = "item", name = "sticky-note"},
+                position = note.invis_note.position,
+                text = note.text,
+                last_user = note.last_user,
+                target = note.invis_note
+            }
+            note.mapmark = note.invis_note.force.add_chart_tag(note.invis_note.surface, tag)
         end
     end
 end
