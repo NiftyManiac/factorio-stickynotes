@@ -143,7 +143,7 @@ local invis_note = {
     name = "invis-note",
     icon = "__StickyNotes__/graphics/sticky-note.png",
     flags = {"player-creation", "placeable-off-grid", "not-repairable"},
-    max_health = 0,
+    max_health = 1,
     collision_mask = {"not-colliding-with-itself"},
 
     item_slot_count = note_slot_count,
